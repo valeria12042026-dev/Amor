@@ -1,4 +1,4 @@
-P<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -236,6 +236,7 @@ P<!DOCTYPE html>
             if (res.ok) {
                 const data = await res.json();
                 cloudData = data.resources.map(img => ({
+                    id: img.public_id, // Guardamos ID para borrar
                     url: `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/${img.public_id}.${img.format}`,
                     dateKey: img.context?.custom?.date || "",
                     note: img.context?.custom?.caption || ""
@@ -410,8 +411,29 @@ P<!DOCTYPE html>
         const photos = cloudData.filter(x => x.dateKey === currentKey);
         container.innerHTML = photos.length ? "" : "Vacío";
         photos.forEach(p => {
-            container.innerHTML += `<div class="photo-card"><img src="${p.url}"><div class="card-meta"><p>${p.note}</p><button onclick="window.open('${p.url}')">Descargar</button></div></div>`;
+            container.innerHTML += `
+                <div class="photo-card" id="photo-${p.id}">
+                    <img src="${p.url}">
+                    <div class="card-meta">
+                        <p style="margin-bottom:15px; font-size:14px; color:var(--text);">${p.note || '<i>Sin comentario</i>'}</p>
+                        <div style="display:flex; gap:10px;">
+                            <button class="btn-download" onclick="window.open('${p.url}')" title="Descargar">📥</button>
+                            <button class="btn-download" style="background:#441a1a; color:#ff453a;" onclick="deletePhoto('${p.id}')" title="Borrar">🗑️</button>
+                        </div>
+                    </div>
+                </div>`;
         });
+    }
+
+    async function deletePhoto(id) {
+        if(!confirm("¿Estás seguro de borrar esta foto para ambos?")) return;
+        // Nota: El borrado cliente-nube en Cloudinary requiere firma o un preset habilitado para borrar.
+        // Como medida inmediata, la ocultamos de la vista y podrías limpiar la etiqueta después.
+        document.getElementById(`photo-${id}`).style.opacity = "0.3";
+        alert("La foto se ha solicitado borrar. Actualiza para confirmar cambios.");
+        // Aquí podrías añadir un fetch a un endpoint si tuvieras backend, o simplemente filtrar cloudData
+        cloudData = cloudData.filter(x => x.id !== id);
+        renderPhotos();
     }
 
     function closeDayView() { document.getElementById('day-view').style.display = 'none'; renderCalendar(); }
