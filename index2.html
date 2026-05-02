@@ -1,10 +1,360 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>HOME</title>
-  </head>
-  <body>
-    <h1>hola mundo</h1>
-    
-  </body>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galería Compartida | Ayber</title>
+    <style>
+        :root {
+            --bg: #000000;
+            --card: #1c1c1e;
+            --accent: #0a84ff;
+            --text: #ffffff;
+            --text-sec: #8e8e93;
+            --green: #32d74b;
+        }
+
+        body { 
+            font-family: -apple-system, sans-serif; 
+            background: var(--bg); color: var(--text); margin: 0; padding: 0;
+            overflow-x: hidden;
+        }
+
+        /* HEADER */
+        .header { padding: 40px 20px 10px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: var(--bg); z-index: 100; }
+        .selectors { display: flex; gap: 10px; }
+        .selector-btn {
+            background: rgba(10, 132, 255, 0.15);
+            color: var(--accent); padding: 8px 15px; border-radius: 20px;
+            font-weight: bold; font-size: 14px; border: none; cursor: pointer;
+        }
+
+        /* MENU HAMBURGUESA */
+        .hamburger { font-size: 24px; cursor: pointer; color: var(--accent); background: none; border: none; z-index: 1100; }
+        .sidebar {
+            position: fixed; top: 0; left: -280px; width: 280px; height: 100%;
+            background: var(--card); z-index: 1000; transition: 0.3s;
+            padding-top: 80px; box-shadow: 5px 0 15px rgba(0,0,0,0.5);
+        }
+        .sidebar.active { left: 0; }
+        .sidebar-item { padding: 18px 25px; font-size: 18px; color: var(--text); display: flex; align-items: center; gap: 15px; cursor: pointer; border-bottom: 1px solid #2c2c2e; }
+        .sidebar-item.active { color: var(--accent); background: rgba(10, 132, 255, 0.1); }
+
+        /* SECCIONES */
+        .view-section { display: none; padding: 0; animation: fadeIn 0.3s; }
+        .view-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* CALENDARIO */
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; padding: 15px; }
+        .day-name { text-align: center; font-size: 12px; color: var(--text-sec); padding-bottom: 10px; }
+        .day { 
+            aspect-ratio: 1/1; display: flex; align-items: center; justify-content: center; 
+            border-radius: 50%; font-size: 17px; cursor: pointer; position: relative;
+        }
+        .day.today { color: var(--accent); font-weight: bold; border: 1px solid var(--accent); }
+        .day.has-content::after { 
+            content: ''; position: absolute; bottom: 6px; width: 4px; height: 4px; 
+            background: var(--green); border-radius: 50%; 
+        }
+
+        /* WHATSAPP CHANCHITO */
+        #chat-view { padding: 20px; display: flex; flex-direction: column; height: 70vh; }
+        #chat-container { flex: 1; overflow-y: auto; background: #000; border-radius: 20px; padding: 15px; border: 1px solid #2c2c2e; margin-bottom: 15px; display: flex; flex-direction: column; }
+        .msg { margin-bottom: 10px; padding: 12px 16px; border-radius: 18px; max-width: 80%; word-wrap: break-word; font-size: 15px; }
+        .msg.sent { background: #005c4b; align-self: flex-end; color: white; }
+        .msg.received { background: #202c33; align-self: flex-start; color: white; }
+        .chat-input-area { display: flex; gap: 10px; padding-bottom: 20px; }
+        .chat-input-area input { flex: 1; background: var(--card); border: none; padding: 15px; border-radius: 20px; color: white; outline: none; }
+
+        /* NOTIFICACIONES */
+        #notif-view { padding: 20px; }
+        .notif-form { background: var(--card); padding: 20px; border-radius: 25px; margin-bottom: 25px; }
+        .notif-form input { width: 100%; background: #2c2c2e; border: none; padding: 14px; border-radius: 12px; color: white; margin-bottom: 12px; box-sizing: border-box; }
+        .notif-item { background: var(--card); padding: 15px; border-radius: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--accent); }
+
+        /* MODALES Y VISTA DE DÍA (Tus originales) */
+        .modal-wheel-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; align-items: center; justify-content: center; }
+        .wheel-container { background: var(--card); width: 85%; max-height: 60vh; border-radius: 30px; padding: 20px; overflow-y: auto; text-align: center; }
+        .wheel-item { padding: 18px; font-size: 20px; border-bottom: 1px solid #2c2c2e; color: var(--text-sec); cursor: pointer; }
+        .wheel-item.active { color: var(--accent); font-weight: bold; }
+
+        #day-view { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 3000; overflow-y: auto; padding: 20px; box-sizing: border-box; }
+        .back-nav { color: var(--accent); cursor: pointer; margin-bottom: 25px; font-size: 18px; }
+        .upload-form { background: var(--card); padding: 20px; border-radius: 25px; margin-bottom: 25px; }
+        .upload-form input, .upload-form textarea { width: 100%; background: #2c2c2e; border: none; padding: 14px; border-radius: 12px; color: white; margin-bottom: 12px; box-sizing: border-box; font-family: inherit; }
+        .save-btn { background: var(--accent); color: white; border: none; width: 100%; padding: 16px; border-radius: 15px; font-weight: bold; cursor: pointer; }
+
+        .photo-card { background: var(--card); border-radius: 25px; overflow: hidden; margin-bottom: 20px; }
+        .photo-card img { width: 100%; display: block; }
+        .card-meta { padding: 15px; }
+        .btn-download { background: #2c2c2e; color: var(--accent); border: none; padding: 8px 15px; border-radius: 10px; cursor: pointer; font-weight: bold; }
+
+        #global-loader { position: fixed; top: 10px; right: 10px; font-size: 12px; color: var(--accent); display: none; z-index: 4000; }
+    </style>
+</head>
+<body>
+
+    <div id="global-loader">Sincronizando nube...</div>
+
+    <div class="header">
+        <button class="hamburger" onclick="toggleSidebar()">☰</button>
+        <h1 id="view-title">Galería</h1>
+        <div class="selectors" id="header-selectors">
+            <button class="selector-btn" onclick="openWheel('month')" id="btn-month">Mayo</button>
+            <button class="selector-btn" onclick="openWheel('year')" id="btn-year">2026</button>
+        </div>
+    </div>
+
+    <div id="sidebar" class="sidebar">
+        <div class="sidebar-item active" onclick="navigate('calendar')">📅 Calendario</div>
+        <div class="sidebar-item" onclick="navigate('chat')">🐷 WhatsApp Chanchito</div>
+        <div class="sidebar-item" onclick="navigate('notifs')">🔔 Notificaciones</div>
+    </div>
+
+    <div id="section-calendar" class="view-section active">
+        <div id="calendar" class="calendar-grid"></div>
+    </div>
+
+    <div id="section-chat" class="view-section">
+        <div id="chat-view">
+            <div id="chat-container"></div>
+            <div class="chat-input-area">
+                <input type="text" id="chatInput" placeholder="Escribe a Valeria...">
+                <button class="selector-btn" onclick="sendChatMessage()">Enviar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="section-notifs" class="view-section">
+        <div id="notif-view">
+            <div class="notif-form">
+                <p style="margin-top:0">Programar Aviso:</p>
+                <input type="date" id="notifDate">
+                <input type="text" id="notifReason" placeholder="Motivo (Ej: Cumpleaños de Valeria)">
+                <button class="save-btn" onclick="saveNotif()">Guardar Recordatorio</button>
+            </div>
+            <div id="notif-list-container"></div>
+        </div>
+    </div>
+
+    <div id="wheel-modal" class="modal-wheel-overlay" onclick="closeWheel()">
+        <div class="wheel-container" id="wheel-content" onclick="event.stopPropagation()"></div>
+    </div>
+
+    <div id="day-view">
+        <div class="back-nav" onclick="closeDayView()">❮ Calendario</div>
+        <h2 id="day-title"></h2>
+        <div class="upload-form">
+            <input type="file" id="fileInput" accept="image/*">
+            <textarea id="noteInput" placeholder="Escribe un comentario..."></textarea>
+            <button class="save-btn" onclick="handleUpload()">Subir para ambos</button>
+        </div>
+        <div id="photo-container"></div>
+    </div>
+
+<script>
+    const CLOUD_NAME = "dpd2vbg6m";
+    const UPLOAD_PRESET = "sqeyefdi";
+    const SHARED_TAG = "ayber_valeria_2026";
+
+    let viewDate = new Date(2026, 4, 1);
+    let currentKey = "";
+    let cloudData = [];
+    const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+
+    // Datos nuevos (Persistencia local)
+    let messages = JSON.parse(localStorage.getItem('chanchito_msgs') || "[]");
+    let reminders = JSON.parse(localStorage.getItem('ayber_reminders') || "[]");
+
+    window.onload = () => {
+        syncCloud();
+        renderChat();
+        renderNotifList();
+        checkTodayReminders();
+    };
+
+    // --- LÓGICA DE NAVEGACIÓN ---
+    function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
+
+    function navigate(section) {
+        document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+        
+        document.getElementById(`section-${section}`).classList.add('active');
+        document.getElementById('header-selectors').style.display = (section === 'calendar') ? 'flex' : 'none';
+        
+        const titles = { 'calendar': 'Galería', 'chat': 'Chanchito Chat', 'notifs': 'Avisos' };
+        document.getElementById('view-title').innerText = titles[section];
+        
+        event.currentTarget.classList.add('active');
+        toggleSidebar();
+    }
+
+    // --- LÓGICA ORIGINAL DE CLOUDINARY ---
+    async function syncCloud() {
+        document.getElementById('global-loader').style.display = 'block';
+        try {
+            const saved = localStorage.getItem('ayber_shared_cache');
+            if(saved) cloudData = JSON.parse(saved);
+            renderCalendar();
+        } catch(e) { console.log(e); }
+        document.getElementById('global-loader').style.display = 'none';
+    }
+
+    function renderCalendar() {
+        const grid = document.getElementById('calendar');
+        grid.innerHTML = "";
+        const m = viewDate.getMonth(), y = viewDate.getFullYear();
+        document.getElementById('btn-month').innerText = meses[m];
+        document.getElementById('btn-year').innerText = y;
+        ["D","L","M","M","J","V","S"].forEach(d => grid.innerHTML += `<div class="day-name">${d}</div>`);
+        const firstDay = new Date(y, m, 1).getDay();
+        const days = new Date(y, m + 1, 0).getDate();
+        for(let i=0; i<firstDay; i++) grid.innerHTML += `<div></div>`;
+        for(let d=1; d<=days; d++) {
+            const key = `${y}-${m+1}-${d}`;
+            const hasData = cloudData.some(x => x.dateKey === key) ? 'has-content' : '';
+            const isToday = (new Date().toDateString() === new Date(y, m, d).toDateString()) ? 'today' : '';
+            grid.innerHTML += `<div class="day ${isToday} ${hasData}" onclick="openDay('${key}', ${d})">${d}</div>`;
+        }
+    }
+
+    // --- WHATSAPP CHANCHITO ---
+    function sendChatMessage() {
+        const input = document.getElementById('chatInput');
+        if(!input.value.trim()) return;
+        const msg = { text: input.value, time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), mine: true };
+        messages.push(msg);
+        localStorage.setItem('chanchito_msgs', JSON.stringify(messages));
+        input.value = "";
+        renderChat();
+    }
+
+    function renderChat() {
+        const container = document.getElementById('chat-container');
+        container.innerHTML = messages.map(m => `
+            <div class="msg ${m.mine ? 'sent' : 'received'}">
+                ${m.text} <br>
+                <small style="font-size:10px; opacity:0.6; display:block; text-align:right; margin-top:5px;">${m.time}</small>
+            </div>
+        `).join('');
+        container.scrollTop = container.scrollHeight;
+    }
+
+    // --- NOTIFICACIONES ---
+    function saveNotif() {
+        const date = document.getElementById('notifDate').value;
+        const reason = document.getElementById('notifReason').value;
+        if(!date || !reason) return alert("Por favor, llena ambos campos");
+        
+        reminders.push({ date, reason });
+        localStorage.setItem('ayber_reminders', JSON.stringify(reminders));
+        document.getElementById('notifDate').value = "";
+        document.getElementById('notifReason').value = "";
+        renderNotifList();
+        alert("¡Recordatorio guardado!");
+    }
+
+    function renderNotifList() {
+        const container = document.getElementById('notif-list-container');
+        container.innerHTML = reminders.length ? "<h3>Listado:</h3>" : "<p style='color:#8e8e93'>No hay avisos programados</p>";
+        reminders.forEach((r, index) => {
+            container.innerHTML += `
+                <div class="notif-item">
+                    <div>
+                        <div style="font-weight:bold">${r.reason}</div>
+                        <div style="font-size:13px; color:var(--text-sec)">${r.date}</div>
+                    </div>
+                    <button onclick="deleteNotif(${index})" style="background:none; border:none; color:#ff453a; font-size:18px;">✕</button>
+                </div>
+            `;
+        });
+    }
+
+    function deleteNotif(index) {
+        reminders.splice(index, 1);
+        localStorage.setItem('ayber_reminders', JSON.stringify(reminders));
+        renderNotifList();
+    }
+
+    function checkTodayReminders() {
+        const today = new Date().toISOString().split('T')[0];
+        reminders.forEach(r => {
+            if(r.date === today) {
+                setTimeout(() => {
+                    alert(`🔔 RECORDATORIO PARA HOY:\n\n${r.reason}`);
+                }, 1000);
+            }
+        });
+    }
+
+    // --- FUNCIONES DE SOPORTE (Tus originales) ---
+    function openWheel(type) {
+        const modal = document.getElementById('wheel-modal');
+        const content = document.getElementById('wheel-content');
+        content.innerHTML = "";
+        if(type === 'month') {
+            meses.forEach((name, i) => content.innerHTML += `<div class="wheel-item" onclick="selectMonth(${i})">${name}</div>`);
+        } else {
+            for(let y=2024; y<=2030; y++) content.innerHTML += `<div class="wheel-item" onclick="selectYear(${y})">${y}</div>`;
+        }
+        modal.style.display = 'flex';
+    }
+    function closeWheel() { document.getElementById('wheel-modal').style.display = 'none'; }
+    function selectMonth(m) { viewDate.setMonth(m); closeWheel(); renderCalendar(); }
+    function selectYear(y) { viewDate.setFullYear(y); closeWheel(); renderCalendar(); }
+
+    async function handleUpload() {
+        const file = document.getElementById('fileInput').files[0];
+        const note = document.getElementById('noteInput').value;
+        if(!file) return alert("Elige una foto");
+        document.getElementById('global-loader').style.display = 'block';
+
+        const fd = new FormData();
+        fd.append("file", file);
+        fd.append("upload_preset", UPLOAD_PRESET);
+        fd.append("tags", SHARED_TAG);
+        fd.append("context", `caption=${note}|date=${currentKey}`);
+
+        try {
+            const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {method:"POST", body:fd});
+            const data = await res.json();
+            if(data.secure_url) {
+                cloudData.unshift({ url: data.secure_url, note: note, dateKey: currentKey, time: new Date().toLocaleTimeString() });
+                localStorage.setItem('ayber_shared_cache', JSON.stringify(cloudData));
+                renderPhotos();
+                alert("¡Subido!");
+            }
+        } catch(e) { alert("Error de conexión"); }
+        document.getElementById('global-loader').style.display = 'none';
+    }
+
+    function openDay(key, d) {
+        currentKey = key;
+        document.getElementById('day-title').innerText = `${d} de ${meses[viewDate.getMonth()]} ${viewDate.getFullYear()}`;
+        document.getElementById('day-view').style.display = 'block';
+        renderPhotos();
+    }
+
+    function renderPhotos() {
+        const container = document.getElementById('photo-container');
+        const photos = cloudData.filter(x => x.dateKey === currentKey);
+        container.innerHTML = photos.length ? "" : "<p style='text-align:center; color:#8e8e93'>No hay recuerdos</p>";
+        photos.forEach(p => {
+            container.innerHTML += `
+                <div class="photo-card">
+                    <img src="${p.url}">
+                    <div class="card-meta">
+                        <p>${p.note}</p>
+                        <button class="btn-download" onclick="window.open('${p.url}')">📥 Ver/Descargar</button>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    function closeDayView() { document.getElementById('day-view').style.display = 'none'; renderCalendar(); }
+</script>
+</body>
 </html>
