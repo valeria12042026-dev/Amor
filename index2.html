@@ -1,9 +1,10 @@
-M<!DOCTYPE html>
+P<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Galería Compartida | Ayber</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --bg: #000000;
@@ -18,6 +19,13 @@ M<!DOCTYPE html>
             font-family: -apple-system, sans-serif; 
             background: var(--bg); color: var(--text); margin: 0; padding: 0;
             overflow-x: hidden;
+        }
+
+        /* SELECTOR DE USUARIO - AHORA OCULTO POR DEFECTO */
+        #user-selector-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg); z-index: 5000; display: none; /* Cambiado de flex a none */
+            flex-direction: column; align-items: center; justify-content: center;
         }
 
         /* HEADER */
@@ -59,14 +67,15 @@ M<!DOCTYPE html>
         }
 
         /* WHATSAPP CHANCHITO */
-        #chat-view { padding: 20px; display: flex; flex-direction: column; height: 70vh; }
+        #chat-view { padding: 20px; display: flex; flex-direction: column; height: 75vh; }
         #chat-container { flex: 1; overflow-y: auto; background: #000; border-radius: 20px; padding: 15px; border: 1px solid #2c2c2e; margin-bottom: 15px; display: flex; flex-direction: column; }
-        .msg { margin-bottom: 10px; padding: 12px 16px; border-radius: 18px; max-width: 80%; word-wrap: break-word; font-size: 15px; }
-        .msg.sent { background: #005c4b; align-self: flex-end; color: white; }
-        .msg.received { background: #202c33; align-self: flex-start; color: white; }
+        .msg { margin-bottom: 10px; padding: 12px 16px; border-radius: 18px; max-width: 80%; word-wrap: break-word; font-size: 15px; position: relative; }
+        .msg.sent { background: #005c4b; align-self: flex-end; color: white; border-bottom-right-radius: 2px; }
+        .msg.received { background: #202c33; align-self: flex-start; color: white; border-bottom-left-radius: 2px; }
         .chat-input-area { display: flex; gap: 10px; padding-bottom: 20px; }
         .chat-input-area input { flex: 1; background: var(--card); border: none; padding: 15px; border-radius: 20px; color: white; outline: none; }
-
+        .btn-del { font-size: 10px; opacity: 0.4; cursor: pointer; margin-bottom: 5px; display: block; }
+        
         /* NOTIFICACIONES */
         #notif-view { padding: 20px; }
         .notif-form { background: var(--card); padding: 20px; border-radius: 25px; margin-bottom: 25px; }
@@ -95,6 +104,12 @@ M<!DOCTYPE html>
 </head>
 <body>
 
+    <div id="user-selector-overlay">
+        <h2>¿Quién eres?</h2>
+        <button class="save-btn" onclick="setUser('Ayber')" style="margin-bottom: 20px; width: 200px;">Soy Ayber</button>
+        <button class="save-btn" onclick="setUser('Valeria')" style="background: #ff375f; width: 200px;">Soy Valeria</button>
+    </div>
+
     <div id="global-loader">Sincronizando nube...</div>
 
     <div class="header">
@@ -118,9 +133,12 @@ M<!DOCTYPE html>
 
     <div id="section-chat" class="view-section">
         <div id="chat-view">
+            <div style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
+                <button class="selector-btn" style="background: rgba(255,69,58,0.2); color:#ff453a;" onclick="clearFullChat()">Vaciar Chat</button>
+            </div>
             <div id="chat-container"></div>
             <div class="chat-input-area">
-                <input type="text" id="chatInput" placeholder="Escribe a Valeria...">
+                <input type="text" id="chatInput" placeholder="Escribe un mensaje...">
                 <button class="selector-btn" onclick="sendChatMessage()">Enviar</button>
             </div>
         </div>
@@ -131,7 +149,7 @@ M<!DOCTYPE html>
             <div class="notif-form">
                 <p style="margin-top:0">Programar Aviso:</p>
                 <input type="date" id="notifDate">
-                <input type="text" id="notifReason" placeholder="Motivo (Ej: Cumpleaños de Valeria)">
+                <input type="text" id="notifReason" placeholder="Motivo">
                 <button class="save-btn" onclick="saveNotif()">Guardar Recordatorio</button>
             </div>
             <div id="notif-list-container"></div>
@@ -157,18 +175,27 @@ M<!DOCTYPE html>
     const CLOUD_NAME = "dpd2vbg6m";
     const UPLOAD_PRESET = "sqeyefdi";
     const SHARED_TAG = "ayber_valeria_2026";
+    
+    const SUPABASE_URL = 'https://ckiozwumzoqcyfbiazjf.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_6JzDCmB92cBB_tqmJLnGEg_-JpP3MuG';
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+    let miUsuario = ""; // Aquí se guarda si eres Ayber o Valeria
     let viewDate = new Date(2026, 4, 1);
     let currentKey = "";
     let cloudData = [];
     const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-
-    let messages = JSON.parse(localStorage.getItem('chanchito_msgs') || "[]");
     let reminders = JSON.parse(localStorage.getItem('ayber_reminders') || "[]");
+
+    // FUNCIÓN PARA ELEGIR USUARIO
+    function setUser(nombre) {
+        miUsuario = nombre;
+        document.getElementById('user-selector-overlay').style.display = 'none';
+        initChatSystem();
+    }
 
     window.onload = () => {
         syncCloud();
-        renderChat();
         renderNotifList();
         checkTodayReminders();
     };
@@ -176,24 +203,35 @@ M<!DOCTYPE html>
     function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
 
     function navigate(section) {
+        // SI SE ENTRA AL CHAT Y NO HAY USUARIO, MOSTRAR EL SELECTOR
+        if (section === 'chat' && miUsuario === "") {
+            document.getElementById('user-selector-overlay').style.display = 'flex';
+        }
+
         document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
         document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
-        
         document.getElementById(`section-${section}`).classList.add('active');
         document.getElementById('header-selectors').style.display = (section === 'calendar') ? 'flex' : 'none';
-        
         const titles = { 'calendar': 'Galería', 'chat': 'Chanchito Chat', 'notifs': 'Avisos' };
         document.getElementById('view-title').innerText = titles[section];
         
-        event.currentTarget.classList.add('active');
+        // CORRECCIÓN: Usar event.currentTarget solo si existe, si no buscar el elemento por texto
+        const items = document.querySelectorAll('.sidebar-item');
+        items.forEach(item => {
+            if(item.innerText.toLowerCase().includes(section === 'chat' ? 'chanchito' : section)) {
+                item.classList.add('active');
+            } else {
+                item.classList.remove('active');
+            }
+        });
+
         toggleSidebar();
     }
 
-    // --- LÓGICA DE CLOUDINARY CORREGIDA ---
+    // --- CLOUDINARY ---
     async function syncCloud() {
         document.getElementById('global-loader').style.display = 'block';
         try {
-            // Buscamos la lista real de la nube usando la etiqueta compartida
             const res = await fetch(`https://res.cloudinary.com/${CLOUD_NAME}/image/list/${SHARED_TAG}.json?v=${new Date().getTime()}`);
             if (res.ok) {
                 const data = await res.json();
@@ -203,21 +241,14 @@ M<!DOCTYPE html>
                     note: img.context?.custom?.caption || ""
                 }));
                 localStorage.setItem('ayber_shared_cache', JSON.stringify(cloudData));
-            } else {
-                const saved = localStorage.getItem('ayber_shared_cache');
-                if(saved) cloudData = JSON.parse(saved);
             }
-        } catch(e) { 
-            const saved = localStorage.getItem('ayber_shared_cache');
-            if(saved) cloudData = JSON.parse(saved);
-        }
+        } catch(e) {}
         renderCalendar();
         document.getElementById('global-loader').style.display = 'none';
     }
 
     function renderCalendar() {
-        const grid = document.getElementById('calendar');
-        grid.innerHTML = "";
+        const grid = document.getElementById('calendar'); grid.innerHTML = "";
         const m = viewDate.getMonth(), y = viewDate.getFullYear();
         document.getElementById('btn-month').innerText = meses[m];
         document.getElementById('btn-year').innerText = y;
@@ -233,52 +264,99 @@ M<!DOCTYPE html>
         }
     }
 
-    function sendChatMessage() {
-        const input = document.getElementById('chatInput');
-        if(!input.value.trim()) return;
-        const msg = { text: input.value, time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), mine: true };
-        messages.push(msg);
-        localStorage.setItem('chanchito_msgs', JSON.stringify(messages));
-        input.value = "";
-        renderChat();
-    }
+    // --- CHAT REALTIME (OPTIMIZADO) ---
+    async function initChatSystem() {
+        const { data, error } = await _supabase.from('mensajes').select('*').order('created_at', { ascending: true });
+        
+        if (error) {
+            console.error("Error cargando mensajes:", error);
+            return;
+        }
 
-    function renderChat() {
         const container = document.getElementById('chat-container');
-        container.innerHTML = messages.map(m => `
-            <div class="msg ${m.mine ? 'sent' : 'received'}">
-                ${m.text} <br>
-                <small style="font-size:10px; opacity:0.6; display:block; text-align:right; margin-top:5px;">${m.time}</small>
-            </div>
-        `).join('');
-        container.scrollTop = container.scrollHeight;
+        container.innerHTML = ""; 
+        
+        if(data) {
+            data.forEach(m => drawMessage(m));
+            container.scrollTop = container.scrollHeight;
+        }
+
+        _supabase.channel('mensajes-realtime')
+        .on('postgres_changes', 
+            { event: 'INSERT', schema: 'public', table: 'mensajes' }, 
+            (payload) => {
+                drawMessage(payload.new);
+                container.scrollTop = container.scrollHeight;
+            }
+        )
+        .on('postgres_changes',
+            { event: 'DELETE', schema: 'public', table: 'mensajes' },
+            (payload) => {
+                const el = document.getElementById(`msg-${payload.old.id}`);
+                if(el) el.remove();
+            }
+        )
+        .subscribe();
     }
 
+    function drawMessage(m) {
+        const container = document.getElementById('chat-container');
+        const esMio = (m.user === miUsuario);
+        
+        if (document.getElementById(`msg-${m.id}`)) return;
+
+        const msgDiv = document.createElement('div');
+        msgDiv.id = `msg-${m.id}`;
+        msgDiv.className = `msg ${esMio ? 'sent' : 'received'}`;
+        msgDiv.innerHTML = `
+            <span class="btn-del" onclick="deleteThisMessage(${m.id})">🗑️</span>
+            ${m.text}
+            <small style="font-size:10px; opacity:0.6; display:block; text-align:right; margin-top:5px;">${m.time}</small>
+        `;
+        container.appendChild(msgDiv);
+    }
+
+    async function sendChatMessage() {
+        const input = document.getElementById('chatInput');
+        if(!input.value.trim() || miUsuario === "") return;
+        const now = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        
+        const { error } = await _supabase.from('mensajes').insert([{ user: miUsuario, text: input.value, time: now }]);
+        
+        if (error) {
+            alert("Error al enviar: " + error.message);
+        } else {
+            input.value = "";
+        }
+    }
+
+    async function deleteThisMessage(id) {
+        if(confirm("¿Borrar?")) {
+            await _supabase.from('mensajes').delete().eq('id', id);
+        }
+    }
+
+    async function clearFullChat() {
+        if(confirm("¿Vaciar chat?")) {
+            await _supabase.from('mensajes').delete().neq('id', 0);
+        }
+    }
+
+    // --- RESTO DE FUNCIONES (CALENDARIO/NOTIF) ---
     function saveNotif() {
         const date = document.getElementById('notifDate').value;
         const reason = document.getElementById('notifReason').value;
-        if(!date || !reason) return alert("Por favor, llena ambos campos");
+        if(!date || !reason) return;
         reminders.push({ date, reason });
         localStorage.setItem('ayber_reminders', JSON.stringify(reminders));
-        document.getElementById('notifDate').value = "";
-        document.getElementById('notifReason').value = "";
         renderNotifList();
-        alert("¡Recordatorio guardado!");
     }
 
     function renderNotifList() {
         const container = document.getElementById('notif-list-container');
-        container.innerHTML = reminders.length ? "<h3>Listado:</h3>" : "<p style='color:#8e8e93'>No hay avisos programados</p>";
+        container.innerHTML = reminders.length ? "<h3>Listado:</h3>" : "";
         reminders.forEach((r, index) => {
-            container.innerHTML += `
-                <div class="notif-item">
-                    <div>
-                        <div style="font-weight:bold">${r.reason}</div>
-                        <div style="font-size:13px; color:var(--text-sec)">${r.date}</div>
-                    </div>
-                    <button onclick="deleteNotif(${index})" style="background:none; border:none; color:#ff453a; font-size:18px;">✕</button>
-                </div>
-            `;
+            container.innerHTML += `<div class="notif-item"><div><b>${r.reason}</b><br>${r.date}</div><button onclick="deleteNotif(${index})">✕</button></div>`;
         });
     }
 
@@ -290,24 +368,15 @@ M<!DOCTYPE html>
 
     function checkTodayReminders() {
         const today = new Date().toISOString().split('T')[0];
-        reminders.forEach(r => {
-            if(r.date === today) {
-                setTimeout(() => {
-                    alert(`🔔 RECORDATORIO PARA HOY:\n\n${r.reason}`);
-                }, 1000);
-            }
-        });
+        reminders.forEach(r => { if(r.date === today) alert(`🔔 HOY: ${r.reason}`); });
     }
 
     function openWheel(type) {
         const modal = document.getElementById('wheel-modal');
         const content = document.getElementById('wheel-content');
         content.innerHTML = "";
-        if(type === 'month') {
-            meses.forEach((name, i) => content.innerHTML += `<div class="wheel-item" onclick="selectMonth(${i})">${name}</div>`);
-        } else {
-            for(let y=2024; y<=2030; y++) content.innerHTML += `<div class="wheel-item" onclick="selectYear(${y})">${y}</div>`;
-        }
+        if(type === 'month') meses.forEach((name, i) => content.innerHTML += `<div class="wheel-item" onclick="selectMonth(${i})">${name}</div>`);
+        else for(let y=2024; y<=2030; y++) content.innerHTML += `<div class="wheel-item" onclick="selectYear(${y})">${y}</div>`;
         modal.style.display = 'flex';
     }
     function closeWheel() { document.getElementById('wheel-modal').style.display = 'none'; }
@@ -317,30 +386,21 @@ M<!DOCTYPE html>
     async function handleUpload() {
         const file = document.getElementById('fileInput').files[0];
         const note = document.getElementById('noteInput').value;
-        if(!file) return alert("Elige una foto");
+        if(!file) return;
         document.getElementById('global-loader').style.display = 'block';
-
         const fd = new FormData();
-        fd.append("file", file);
-        fd.append("upload_preset", UPLOAD_PRESET);
-        fd.append("tags", SHARED_TAG);
-        fd.append("context", `caption=${note}|date=${currentKey}`);
-
+        fd.append("file", file); fd.append("upload_preset", UPLOAD_PRESET);
+        fd.append("tags", SHARED_TAG); fd.append("context", `caption=${note}|date=${currentKey}`);
         try {
             const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {method:"POST", body:fd});
-            const data = await res.json();
-            if(data.secure_url) {
-                // Al subir, recargamos para que ambos teléfonos vean los cambios
-                syncCloud(); 
-                alert("¡Subido!");
-            }
-        } catch(e) { alert("Error de conexión"); }
+            if(res.ok) { syncCloud(); alert("¡Subido!"); }
+        } catch(e) {}
         document.getElementById('global-loader').style.display = 'none';
     }
 
     function openDay(key, d) {
         currentKey = key;
-        document.getElementById('day-title').innerText = `${d} de ${meses[viewDate.getMonth()]} ${viewDate.getFullYear()}`;
+        document.getElementById('day-title').innerText = `${d} de ${meses[viewDate.getMonth()]}`;
         document.getElementById('day-view').style.display = 'block';
         renderPhotos();
     }
@@ -348,17 +408,9 @@ M<!DOCTYPE html>
     function renderPhotos() {
         const container = document.getElementById('photo-container');
         const photos = cloudData.filter(x => x.dateKey === currentKey);
-        container.innerHTML = photos.length ? "" : "<p style='text-align:center; color:#8e8e93'>No hay recuerdos</p>";
+        container.innerHTML = photos.length ? "" : "Vacío";
         photos.forEach(p => {
-            container.innerHTML += `
-                <div class="photo-card">
-                    <img src="${p.url}">
-                    <div class="card-meta">
-                        <p>${p.note}</p>
-                        <button class="btn-download" onclick="window.open('${p.url}')">📥 Ver/Descargar</button>
-                    </div>
-                </div>
-            `;
+            container.innerHTML += `<div class="photo-card"><img src="${p.url}"><div class="card-meta"><p>${p.note}</p><button onclick="window.open('${p.url}')">Descargar</button></div></div>`;
         });
     }
 
