@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - Ayber</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body, html {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            background-color: black;
+            position: relative;
+            font-family: Arial, sans-serif;
+        }
+
+        /* --- ANIMACIÓN DEL NOMBRE "AYBER" --- */
+        .nombre-fondo {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 8rem;
+            font-weight: bold;
+            letter-spacing: 15px;
+            z-index: 1;
+            opacity: 0;
+            pointer-events: none;
+            animation: zoomNombre 6s infinite ease-in-out;
+        }
+
+        @keyframes zoomNombre {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+            30% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.4; }
+            60% { transform: translate(-50%, -50%) scale(1); opacity: 0.2; }
+            100% { transform: translate(-50%, -50%) scale(0.2); opacity: 0; }
+        }
+
+        .login-box {
+            position: relative;
+            z-index: 100;
+            background: transparent;
+            padding: 25px;
+            width: 320px;
+            margin: 35vh auto;
+            text-align: center;
+        }
+
+        .password-container {
+            position: relative;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        #password {
+            width: 100%;
+            padding: 12px;
+            padding-right: 40px; 
+            border: 1px solid #000;
+            font-size: 16px;
+            text-align: center;
+            border-radius: 5px;
+            background: white;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            width: 24px;
+            height: 24px;
+            background-repeat: no-repeat;
+            background-position: center;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>');
+        }
+
+        .toggle-password.hidden-eye {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>');
+        }
+
+        .btn-img {
+            width: 70%;
+            margin: 0 auto 10px auto; 
+            cursor: pointer;
+            display: block;
+        }
+
+        .row {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .btn-img-sm {
+            width: 48%;
+            cursor: pointer;
+        }
+
+        /* --- BURBUJAS MODIFICADAS --- */
+        .heart-bubble {
+            position: absolute;
+            pointer-events: none;
+            z-index: 10;
+            animation: float-up-click linear forwards; /* Nueva animación para el clic */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Animación para que nazca en el punto y suba */
+        @keyframes float-up-click {
+            0% { transform: scale(0.5); opacity: 0; }
+            10% { opacity: 1; }
+            100% { 
+                transform: translateY(-110vh) scale(1.2); /* Sube hasta salir por arriba */
+                opacity: 0; 
+            }
+        }
+
+        .heart-shape {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            fill: white;
+            z-index: -1;
+        }
+
+        .heart-text {
+            color: black;
+            font-weight: bold;
+            font-size: 11px;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body onclick="createHeart(event)">
+
+    <div class="nombre-fondo">MIA</div>
+
+    <div class="login-box">
+        <div class="password-container">
+            <input type="password" id="password" placeholder="Ingresar contraseña">
+            <span class="toggle-password" id="toggleEye"></span>
+        </div>
+
+        <img src="ingresar.jpg" class="btn-img" id="btnIngresar">
+
+        <div class="row">
+            <img src="olvide.jpg" class="btn-img-sm">
+            <img src="otros.jpg" class="btn-img-sm">
+        </div>
+    </div>
+
+    <script>
+        const passwordInput = document.getElementById('password');
+        const toggleEye = document.getElementById('toggleEye');
+
+        toggleEye.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            toggleEye.classList.toggle('hidden-eye');
+        });
+
+        function createHeart(e) {
+            const heart = document.createElement('div');
+            heart.className = 'heart-bubble';
+            heart.innerHTML = `
+                <svg class="heart-shape" viewBox="0 0 32 29.6">
+                    <path d="M23.6,0c-3.4,0-6.3,2.7-7.6,5.6C14.7,2.7,11.8,0,8.4,0C3.8,0,0,3.8,0,8.4c0,9.4,9.5,11.9,16,21.2
+                    c6.1-9.3,16-12.1,16-21.2C32,3.8,28.2,0,23.6,0z"/>
+                </svg>
+                <span class="heart-text">Te amo</span>
+            `;
+
+            const size = Math.random() * 30 + 50; 
+            heart.style.width = size + 'px';
+            heart.style.height = size + 'px';
+            
+            if (e) {
+                // SI ES CLIC: Aparece donde está el mouse
+                heart.style.left = (e.clientX - size / 2) + 'px';
+                heart.style.top = (e.clientY - size / 2) + 'px';
+            } else {
+                // SI ES AUTOMÁTICO: Aparece abajo de forma aleatoria
+                heart.style.left = (Math.random() * (window.innerWidth - size)) + 'px';
+                heart.style.top = '100vh'; 
+            }
+
+            const duration = Math.random() * 2 + 4;
+            heart.style.animationDuration = duration + 's';
+
+            document.body.appendChild(heart);
+            setTimeout(() => heart.remove(), duration * 1000);
+        }
+
+        // Corazones automáticos cada 800ms
+        setInterval(() => {
+            createHeart();
+        }, 800);
+    </script>
+</body>
+</html>
