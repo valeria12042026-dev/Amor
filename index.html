@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Login - Ayber</title>
+    <title>Login</title>
     <style>
         * {
             margin: 0;
@@ -16,40 +16,55 @@
             overflow: hidden;
             background-color: black;
             position: relative;
-            font-family: Arial, sans-serif;
+            font-family: 'Arial Black', Gadget, sans-serif;
+            /* Centrado absoluto para el contenedor principal */
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
-        /* --- ANIMACIÓN DEL NOMBRE "AYBER" --- */
+        /* --- NOMBRES ANIMADOS --- */
         .nombre-fondo {
             position: absolute;
-            top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%);
+            transform: translateX(-50%);
             color: white;
-            font-size: 8rem;
+            font-size: 4.5rem;
             font-weight: bold;
-            letter-spacing: 15px;
+            letter-spacing: 10px;
             z-index: 1;
             opacity: 0;
             pointer-events: none;
-            animation: zoomNombre 6s infinite ease-in-out;
+            text-transform: uppercase;
         }
+
+        .superior { top: 8vh; animation: zoomNombre 5s infinite ease-in-out; }
+        .inferior { bottom: 8vh; animation: zoomNombre 5s infinite ease-in-out 2.5s; }
 
         @keyframes zoomNombre {
-            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
-            30% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.4; }
-            60% { transform: translate(-50%, -50%) scale(1); opacity: 0.2; }
-            100% { transform: translate(-50%, -50%) scale(0.2); opacity: 0; }
+            0% { transform: translateX(-50%) scale(0.6); opacity: 0; }
+            30% { transform: translateX(-50%) scale(1); opacity: 0.25; }
+            60% { transform: translateX(-50%) scale(0.9); opacity: 0.15; }
+            100% { transform: translateX(-50%) scale(0.4); opacity: 0; }
         }
 
+        /* --- CAJA DE LOGIN --- */
         .login-box {
             position: relative;
             z-index: 100;
             background: transparent;
             padding: 25px;
             width: 320px;
-            margin: 35vh auto;
             text-align: center;
+            transition: opacity 0.5s ease;
+            /* Eliminamos el margin fijo para que el flex del body haga el trabajo */
+        }
+
+        .img-decorativa {
+            width: 100%;
+            max-width: 180px; /* Un poco más pequeña para que no empuje tanto */
+            margin-bottom: 15px;
+            border-radius: 10px;
         }
 
         .password-container {
@@ -62,16 +77,23 @@
             width: 100%;
             padding: 12px;
             padding-right: 40px; 
-            border: 1px solid #000;
+            border: 2px solid #000;
             font-size: 16px;
             text-align: center;
-            border-radius: 5px;
+            border-radius: 8px;
             background: white;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        #password.error::placeholder {
+            color: red;
+            font-weight: bold;
         }
 
         .toggle-password {
             position: absolute;
-            right: 10px;
+            right: 12px;
             top: 50%;
             transform: translateY(-50%);
             cursor: pointer;
@@ -86,81 +108,180 @@
             background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>');
         }
 
-        .btn-img {
-            width: 70%;
-            margin: 0 auto 10px auto; 
-            cursor: pointer;
-            display: block;
+        .btn-img { width: 70%; margin: 0 auto 10px auto; cursor: pointer; display: block; }
+        .row { display: flex; justify-content: space-between; align-items: center; }
+        .btn-img-sm { cursor: pointer; }
+        #imgOlvide { width: 44%; }
+        #imgOtros { width: 48%; }
+
+        /* --- MODAL DE COMPROBACIÓN --- */
+        #loadingModal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
         }
 
-        .row {
+        .modal-content {
+            background: white;
+            color: black;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            width: 85%;
+            max-width: 350px;
+            font-family: Arial, sans-serif;
+            box-shadow: 0 0 20px rgba(255,255,255,0.2);
+        }
+
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border-left-color: #000;
+            animation: spin 1s linear infinite;
+            margin: 20px auto 0;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* --- CONTENEDOR FURIOSO --- */
+        #containerFurioso {
+            position: absolute;
+            z-index: 200;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        #imgFurioso {
+            width: 280px;
+            transform: scale(0);
+            transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            margin-bottom: 20px;
+        }
+
+        #imgFurioso.show { transform: scale(1.1); }
+
+        .nav-buttons {
             display: flex;
-            justify-content: space-between;
+            gap: 20px;
+            opacity: 0;
+            transition: opacity 0.5s ease 0.4s;
         }
 
-        .btn-img-sm {
-            width: 48%;
+        .nav-buttons.show { opacity: 1; }
+
+        .btn-nav {
+            background: white;
+            color: black;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 5px;
+            font-weight: bold;
             cursor: pointer;
+            text-transform: uppercase;
         }
 
-        /* --- BURBUJAS MODIFICADAS --- */
+        /* --- BURBUJAS --- */
         .heart-bubble {
             position: absolute;
             pointer-events: none;
             z-index: 10;
-            animation: float-up-click linear forwards; /* Nueva animación para el clic */
+            animation: float-up-click linear forwards;
             display: flex;
             justify-content: center;
             align-items: center;
         }
 
-        /* Animación para que nazca en el punto y suba */
         @keyframes float-up-click {
             0% { transform: scale(0.5); opacity: 0; }
             10% { opacity: 1; }
-            100% { 
-                transform: translateY(-110vh) scale(1.2); /* Sube hasta salir por arriba */
-                opacity: 0; 
-            }
+            100% { transform: translateY(-110vh) scale(1.2); opacity: 0; }
         }
 
-        .heart-shape {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            fill: white;
-            z-index: -1;
-        }
-
-        .heart-text {
-            color: black;
-            font-weight: bold;
-            font-size: 11px;
-            margin-bottom: 5px;
-        }
+        .heart-shape { position: absolute; width: 100%; height: 100%; fill: white; z-index: -1; }
+        .heart-text { color: black; font-weight: bold; font-size: 11px; margin-bottom: 5px; }
     </style>
 </head>
-<body onclick="createHeart(event)">
+<body onclick="createHeartClick(event)">
 
-    <div class="nombre-fondo">MIA</div>
+    <div class="nombre-fondo superior">MÍA</div>
+    <div class="nombre-fondo inferior">AYBER</div>
 
-    <div class="login-box">
+    <div id="loadingModal">
+        <div class="modal-content">
+            <p>Estamos comprobando si eres mi amorcito y has puesto la contraseña correcta</p>
+            <div class="spinner"></div>
+        </div>
+    </div>
+
+    <div id="containerFurioso">
+        <img src="furioso.jpg" id="imgFurioso">
+        <div class="nav-buttons" id="navButtons">
+            <button class="btn-nav" onclick="goBack(event)">Atrás</button>
+            <button class="btn-nav" onclick="exitPage(event)">Salir</button>
+        </div>
+    </div>
+
+    <div class="login-box" id="loginContainer">
+        <img src="album.jpg" class="img-decorativa">
+
         <div class="password-container">
             <input type="password" id="password" placeholder="Ingresar contraseña">
             <span class="toggle-password" id="toggleEye"></span>
         </div>
 
-        <img src="ingresar.jpg" class="btn-img" id="btnIngresar">
+        <img src="ingresar.jpg" class="btn-img" id="btnIngresar" onclick="validateLogin(event)">
 
         <div class="row">
-            <img src="olvide.jpg" class="btn-img-sm">
-            <img src="otros.jpg" class="btn-img-sm">
+            <img src="olvide.jpg" id="imgOlvide" class="btn-img-sm" onclick="showFury(event)">
+            <a href="mailto:ayberpisco@gmail.com" onclick="event.stopPropagation();" style="width: 48%; display: inline-block;">
+                <img src="otros.jpg" id="imgOtros" class="btn-img-sm" style="width: 100%;">
+            </a>
         </div>
     </div>
 
     <script>
         const passwordInput = document.getElementById('password');
         const toggleEye = document.getElementById('toggleEye');
+        const loginContainer = document.getElementById('loginContainer');
+        const containerFurioso = document.getElementById('containerFurioso');
+        const imgFurioso = document.getElementById('imgFurioso');
+        const navButtons = document.getElementById('navButtons');
+        const loadingModal = document.getElementById('loadingModal');
+
+        function validateLogin(e) {
+            e.stopPropagation();
+            if (passwordInput.value === "1234") {
+                loadingModal.style.display = "flex";
+                setTimeout(() => {
+                    // SE AGREGÓ ESTE ARREGLO: 
+                    // Ocultamos el modal y limpiamos la clave antes de irnos
+                    loadingModal.style.display = "none";
+                    passwordInput.value = "";
+                    
+                    window.location.href = "index2.html";
+                }, 3000);
+            } else {
+                passwordInput.value = "";
+                passwordInput.classList.add('error');
+                passwordInput.placeholder = "Esa no es la contraseña";
+                
+                passwordInput.addEventListener('input', () => {
+                    passwordInput.classList.remove('error');
+                    passwordInput.placeholder = "Ingresar contraseña";
+                }, { once: true });
+            }
+        }
 
         toggleEye.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -169,42 +290,60 @@
             toggleEye.classList.toggle('hidden-eye');
         });
 
-        function createHeart(e) {
+        function showFury(e) {
+            e.stopPropagation();
+            loginContainer.style.opacity = "0";
+            setTimeout(() => {
+                loginContainer.style.display = "none";
+                containerFurioso.style.display = "flex";
+                setTimeout(() => {
+                    imgFurioso.classList.add('show');
+                    navButtons.classList.add('show');
+                }, 50);
+            }, 500);
+        }
+
+        function goBack(e) {
+            e.stopPropagation();
+            imgFurioso.classList.remove('show');
+            navButtons.classList.remove('show');
+            setTimeout(() => {
+                containerFurioso.style.display = "none";
+                loginContainer.style.display = "block";
+                setTimeout(() => { loginContainer.style.opacity = "1"; }, 50);
+            }, 600);
+        }
+
+        function exitPage(e) {
+            e.stopPropagation();
+            window.close();
+            window.location.href = "about:blank";
+        }
+
+        function createHeartBase(x, y, size) {
             const heart = document.createElement('div');
             heart.className = 'heart-bubble';
-            heart.innerHTML = `
-                <svg class="heart-shape" viewBox="0 0 32 29.6">
-                    <path d="M23.6,0c-3.4,0-6.3,2.7-7.6,5.6C14.7,2.7,11.8,0,8.4,0C3.8,0,0,3.8,0,8.4c0,9.4,9.5,11.9,16,21.2
-                    c6.1-9.3,16-12.1,16-21.2C32,3.8,28.2,0,23.6,0z"/>
-                </svg>
-                <span class="heart-text">Te amo</span>
-            `;
-
-            const size = Math.random() * 30 + 50; 
+            heart.innerHTML = `<svg class="heart-shape" viewBox="0 0 32 29.6"><path d="M23.6,0c-3.4,0-6.3,2.7-7.6,5.6C14.7,2.7,11.8,0,8.4,0C3.8,0,0,3.8,0,8.4c0,9.4,9.5,11.9,16,21.2 c6.1-9.3,16-12.1,16-21.2C32,3.8,28.2,0,23.6,0z"/></svg><span class="heart-text">Te amo</span>`;
             heart.style.width = size + 'px';
             heart.style.height = size + 'px';
-            
-            if (e) {
-                // SI ES CLIC: Aparece donde está el mouse
-                heart.style.left = (e.clientX - size / 2) + 'px';
-                heart.style.top = (e.clientY - size / 2) + 'px';
-            } else {
-                // SI ES AUTOMÁTICO: Aparece abajo de forma aleatoria
-                heart.style.left = (Math.random() * (window.innerWidth - size)) + 'px';
-                heart.style.top = '100vh'; 
-            }
-
+            heart.style.left = (x - size / 2) + 'px';
+            heart.style.top = (y - size / 2) + 'px';
             const duration = Math.random() * 2 + 4;
             heart.style.animationDuration = duration + 's';
-
             document.body.appendChild(heart);
             setTimeout(() => heart.remove(), duration * 1000);
         }
 
-        // Corazones automáticos cada 800ms
-        setInterval(() => {
-            createHeart();
-        }, 800);
+        function createHeartAuto() {
+            const size = Math.random() * 30 + 50; 
+            createHeartBase(Math.random() * window.innerWidth, window.innerHeight + 50, size);
+        }
+
+        function createHeartClick(e) {
+            createHeartBase(e.clientX, e.clientY, Math.random() * 50 + 100);
+        }
+
+        setInterval(createHeartAuto, 800);
     </script>
 </body>
 </html>
