@@ -2,352 +2,364 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Galería Compartida | Ayber</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Login - Ayber</title>
     <style>
-        :root {
-            --bg: #000000;
-            --card: #1c1c1e;
-            --accent: #0a84ff;
-            --text: #ffffff;
-            --text-sec: #8e8e93;
-            --green: #32d74b;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent; /* Quita el destello azul en móviles */
         }
 
-        body { 
-            font-family: -apple-system, sans-serif; 
-            background: var(--bg); color: var(--text); margin: 0; padding: 0;
-            overflow-x: hidden;
+        body, html {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            background-color: black;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
-        /* HEADER */
-        .header { padding: 40px 20px 10px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: var(--bg); z-index: 100; }
-        .selectors { display: flex; gap: 10px; }
-        .selector-btn {
-            background: rgba(10, 132, 255, 0.15);
-            color: var(--accent); padding: 8px 15px; border-radius: 20px;
-            font-weight: bold; font-size: 14px; border: none; cursor: pointer;
+        /* --- NOMBRES ANIMADOS --- */
+        .nombre-fondo {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 3rem; /* Tamaño más manejable para móviles */
+            font-weight: bold;
+            letter-spacing: 5px;
+            z-index: 1;
+            opacity: 0;
+            pointer-events: none;
+            text-transform: uppercase;
+            width: 100%;
+            text-align: center;
         }
 
-        /* MENU HAMBURGUESA */
-        .hamburger { font-size: 24px; cursor: pointer; color: var(--accent); background: none; border: none; z-index: 1100; }
-        .sidebar {
-            position: fixed; top: 0; left: -280px; width: 280px; height: 100%;
-            background: var(--card); z-index: 1000; transition: 0.3s;
-            padding-top: 80px; box-shadow: 5px 0 15px rgba(0,0,0,0.5);
-        }
-        .sidebar.active { left: 0; }
-        .sidebar-item { padding: 18px 25px; font-size: 18px; color: var(--text); display: flex; align-items: center; gap: 15px; cursor: pointer; border-bottom: 1px solid #2c2c2e; }
-        .sidebar-item.active { color: var(--accent); background: rgba(10, 132, 255, 0.1); }
+        .superior { top: 10vh; animation: zoomNombre 5s infinite ease-in-out; }
+        .inferior { bottom: 10vh; animation: zoomNombre 5s infinite ease-in-out 2.5s; }
 
-        /* SECCIONES */
-        .view-section { display: none; padding: 0; animation: fadeIn 0.3s; }
-        .view-section.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        /* CALENDARIO */
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; padding: 15px; }
-        .day-name { text-align: center; font-size: 12px; color: var(--text-sec); padding-bottom: 10px; }
-        .day { 
-            aspect-ratio: 1/1; display: flex; align-items: center; justify-content: center; 
-            border-radius: 50%; font-size: 17px; cursor: pointer; position: relative;
-        }
-        .day.today { color: var(--accent); font-weight: bold; border: 1px solid var(--accent); }
-        .day.has-content::after { 
-            content: ''; position: absolute; bottom: 6px; width: 4px; height: 4px; 
-            background: var(--green); border-radius: 50%; 
+        @keyframes zoomNombre {
+            0% { transform: translateX(-50%) scale(0.6); opacity: 0; }
+            30% { transform: translateX(-50%) scale(1); opacity: 0.2; }
+            60% { transform: translateX(-50%) scale(0.9); opacity: 0.1; }
+            100% { transform: translateX(-50%) scale(0.4); opacity: 0; }
         }
 
-        /* WHATSAPP CHANCHITO */
-        #chat-view { padding: 20px; display: flex; flex-direction: column; height: 70vh; }
-        #chat-container { flex: 1; overflow-y: auto; background: #000; border-radius: 20px; padding: 15px; border: 1px solid #2c2c2e; margin-bottom: 15px; display: flex; flex-direction: column; }
-        .msg { margin-bottom: 10px; padding: 12px 16px; border-radius: 18px; max-width: 80%; word-wrap: break-word; font-size: 15px; }
-        .msg.sent { background: #005c4b; align-self: flex-end; color: white; }
-        .msg.received { background: #202c33; align-self: flex-start; color: white; }
-        .chat-input-area { display: flex; gap: 10px; padding-bottom: 20px; }
-        .chat-input-area input { flex: 1; background: var(--card); border: none; padding: 15px; border-radius: 20px; color: white; outline: none; }
+        /* --- CAJA DE LOGIN (ESTILO APP) --- */
+        .login-box {
+            position: relative;
+            z-index: 100;
+            background: transparent;
+            padding: 20px;
+            width: 90%; /* Se adapta al ancho de la pantalla */
+            max-width: 350px; /* No crece más de esto en PC */
+            text-align: center;
+            transition: opacity 0.5s ease;
+        }
 
-        /* NOTIFICACIONES */
-        #notif-view { padding: 20px; }
-        .notif-form { background: var(--card); padding: 20px; border-radius: 25px; margin-bottom: 25px; }
-        .notif-form input { width: 100%; background: #2c2c2e; border: none; padding: 14px; border-radius: 12px; color: white; margin-bottom: 12px; box-sizing: border-box; }
-        .notif-item { background: var(--card); padding: 15px; border-radius: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--accent); }
+        .img-decorativa {
+            width: 100%;
+            max-width: 200px;
+            margin-bottom: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+        }
 
-        /* MODALES Y VISTA DE DÍA */
-        .modal-wheel-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; align-items: center; justify-content: center; }
-        .wheel-container { background: var(--card); width: 85%; max-height: 60vh; border-radius: 30px; padding: 20px; overflow-y: auto; text-align: center; }
-        .wheel-item { padding: 18px; font-size: 20px; border-bottom: 1px solid #2c2c2e; color: var(--text-sec); cursor: pointer; }
-        .wheel-item.active { color: var(--accent); font-weight: bold; }
+        .password-container {
+            position: relative;
+            width: 100%;
+            margin-bottom: 20px;
+        }
 
-        #day-view { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 3000; overflow-y: auto; padding: 20px; box-sizing: border-box; }
-        .back-nav { color: var(--accent); cursor: pointer; margin-bottom: 25px; font-size: 18px; }
-        .upload-form { background: var(--card); padding: 20px; border-radius: 25px; margin-bottom: 25px; }
-        .upload-form input, .upload-form textarea { width: 100%; background: #2c2c2e; border: none; padding: 14px; border-radius: 12px; color: white; margin-bottom: 12px; box-sizing: border-box; font-family: inherit; }
-        .save-btn { background: var(--accent); color: white; border: none; width: 100%; padding: 16px; border-radius: 15px; font-weight: bold; cursor: pointer; }
+        #password {
+            width: 100%;
+            padding: 15px;
+            padding-right: 45px; 
+            border: none;
+            font-size: 16px; /* Evita zoom en iPhone */
+            text-align: center;
+            border-radius: 12px;
+            background: white;
+            outline: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
 
-        .photo-card { background: var(--card); border-radius: 25px; overflow: hidden; margin-bottom: 20px; }
-        .photo-card img { width: 100%; display: block; }
-        .card-meta { padding: 15px; }
-        .btn-download { background: #2c2c2e; color: var(--accent); border: none; padding: 8px 15px; border-radius: 10px; cursor: pointer; font-weight: bold; }
+        #password.error::placeholder {
+            color: #ff4d4d;
+            font-weight: bold;
+        }
 
-        #global-loader { position: fixed; top: 10px; right: 10px; font-size: 12px; color: var(--accent); display: none; z-index: 4000; }
+        .toggle-password {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            width: 24px;
+            height: 24px;
+            background-repeat: no-repeat;
+            background-position: center;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>');
+        }
+
+        .toggle-password.hidden-eye {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>');
+        }
+
+        .btn-img { 
+            width: 80%; 
+            margin: 0 auto 15px auto; 
+            cursor: pointer; 
+            display: block; 
+            transition: transform 0.2s;
+        }
+        
+        .btn-img:active { transform: scale(0.95); }
+
+        .row { 
+            display: flex; 
+            justify-content: space-between; 
+            gap: 10px;
+        }
+        
+        .btn-img-sm { 
+            cursor: pointer; 
+            width: 48%;
+            border-radius: 8px;
+        }
+
+        /* --- MODAL --- */
+        #loadingModal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            width: 80%;
+            max-width: 300px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border-top: 4px solid #000;
+            animation: spin 1s linear infinite;
+            margin: 20px auto 0;
+        }
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* --- SECCIÓN FURIOSO --- */
+        #containerFurioso {
+            position: absolute;
+            z-index: 200;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            width: 90%;
+        }
+
+        #imgFurioso {
+            width: 100%;
+            max-width: 280px;
+            border-radius: 15px;
+            transform: scale(0);
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            margin-bottom: 20px;
+        }
+
+        #imgFurioso.show { transform: scale(1); }
+
+        .nav-buttons {
+            display: flex;
+            gap: 15px;
+            opacity: 0;
+            transition: opacity 0.5s ease 0.3s;
+        }
+
+        .nav-buttons.show { opacity: 1; }
+
+        .btn-nav {
+            background: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* --- BURBUJAS --- */
+        .heart-bubble {
+            position: absolute;
+            pointer-events: none;
+            z-index: 10;
+            animation: float-up-click linear forwards;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        @keyframes float-up-click {
+            0% { transform: translateY(0) scale(0.5); opacity: 0; }
+            10% { opacity: 0.8; }
+            100% { transform: translateY(-100vh) scale(1.2); opacity: 0; }
+        }
+
+        .heart-shape { width: 100%; height: 100%; fill: rgba(255,255,255,0.8); }
+        .heart-text { color: black; font-weight: bold; font-size: 10px; position: absolute; top: 35%; }
     </style>
 </head>
-<body>
+<body onclick="createHeartClick(event)">
 
-    <div id="global-loader">Sincronizando nube...</div>
+    <div class="nombre-fondo superior">MÍA</div>
+    <div class="nombre-fondo inferior">AYBER</div>
 
-    <div class="header">
-        <button class="hamburger" onclick="toggleSidebar()">☰</button>
-        <h1 id="view-title">Galería</h1>
-        <div class="selectors" id="header-selectors">
-            <button class="selector-btn" onclick="openWheel('month')" id="btn-month">Mayo</button>
-            <button class="selector-btn" onclick="openWheel('year')" id="btn-year">2026</button>
+    <div id="loadingModal">
+        <div class="modal-content">
+            <p style="font-weight: bold;">Comprobando si eres mi amorcito...</p>
+            <div class="spinner"></div>
         </div>
     </div>
 
-    <div id="sidebar" class="sidebar">
-        <div class="sidebar-item active" onclick="navigate('calendar')">📅 Calendario</div>
-        <div class="sidebar-item" onclick="navigate('chat')">🐷 WhatsApp Chanchito</div>
-        <div class="sidebar-item" onclick="navigate('notifs')">🔔 Notificaciones</div>
-    </div>
-
-    <div id="section-calendar" class="view-section active">
-        <div id="calendar" class="calendar-grid"></div>
-    </div>
-
-    <div id="section-chat" class="view-section">
-        <div id="chat-view">
-            <div id="chat-container"></div>
-            <div class="chat-input-area">
-                <input type="text" id="chatInput" placeholder="Escribe a Valeria...">
-                <button class="selector-btn" onclick="sendChatMessage()">Enviar</button>
-            </div>
+    <div id="containerFurioso">
+        <img src="furioso.jpg" id="imgFurioso">
+        <div class="nav-buttons" id="navButtons">
+            <button class="btn-nav" onclick="goBack(event)">Atrás</button>
+            <button class="btn-nav" onclick="exitPage(event)">Salir</button>
         </div>
     </div>
 
-    <div id="section-notifs" class="view-section">
-        <div id="notif-view">
-            <div class="notif-form">
-                <p style="margin-top:0">Programar Aviso:</p>
-                <input type="date" id="notifDate">
-                <input type="text" id="notifReason" placeholder="Motivo (Ej: Cumpleaños de Valeria)">
-                <button class="save-btn" onclick="saveNotif()">Guardar Recordatorio</button>
-            </div>
-            <div id="notif-list-container"></div>
+    <div class="login-box" id="loginContainer">
+        <img src="album.jpg" class="img-decorativa">
+
+        <div class="password-container">
+            <input type="password" id="password" placeholder="Contraseña">
+            <span class="toggle-password" id="toggleEye"></span>
+        </div>
+
+        <img src="ingresar.jpg" class="btn-img" id="btnIngresar" onclick="validateLogin(event)">
+
+        <div class="row">
+            <img src="olvide.jpg" id="imgOlvide" class="btn-img-sm" onclick="showFury(event)">
+            <a href="mailto:ayberpisco@gmail.com" onclick="event.stopPropagation();" style="width: 48%;">
+                <img src="otros.jpg" id="imgOtros" style="width: 100%; cursor: pointer; border-radius: 8px;">
+            </a>
         </div>
     </div>
 
-    <div id="wheel-modal" class="modal-wheel-overlay" onclick="closeWheel()">
-        <div class="wheel-container" id="wheel-content" onclick="event.stopPropagation()"></div>
-    </div>
+    <script>
+        const passwordInput = document.getElementById('password');
+        const toggleEye = document.getElementById('toggleEye');
+        const loginContainer = document.getElementById('loginContainer');
+        const containerFurioso = document.getElementById('containerFurioso');
+        const imgFurioso = document.getElementById('imgFurioso');
+        const navButtons = document.getElementById('navButtons');
+        const loadingModal = document.getElementById('loadingModal');
 
-    <div id="day-view">
-        <div class="back-nav" onclick="closeDayView()">❮ Calendario</div>
-        <h2 id="day-title"></h2>
-        <div class="upload-form">
-            <input type="file" id="fileInput" accept="image/*">
-            <textarea id="noteInput" placeholder="Escribe un comentario..."></textarea>
-            <button class="save-btn" id="uploadBtn" onclick="handleUpload()">Subir para ambos</button>
-        </div>
-        <div id="photo-container"></div>
-    </div>
-
-<script>
-    const CLOUD_NAME = "dpd2vbg6m";
-    const UPLOAD_PRESET = "sqeyefdi";
-    const SHARED_TAG = "ayber_valeria_2026";
-
-    let viewDate = new Date(2026, 4, 1);
-    let currentKey = "";
-    let cloudData = [];
-    const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-
-    let messages = JSON.parse(localStorage.getItem('chanchito_msgs') || "[]");
-    let reminders = JSON.parse(localStorage.getItem('ayber_reminders') || "[]");
-
-    window.onload = () => {
-        syncCloud();
-        renderChat();
-        renderNotifList();
-        checkTodayReminders();
-    };
-
-    function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
-
-    function navigate(section) {
-        document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
-        document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
-        document.getElementById(`section-${section}`).classList.add('active');
-        document.getElementById('header-selectors').style.display = (section === 'calendar') ? 'flex' : 'none';
-        const titles = { 'calendar': 'Galería', 'chat': 'Chanchito Chat', 'notifs': 'Avisos' };
-        document.getElementById('view-title').innerText = titles[section];
-        if (section === 'calendar') syncCloud(); 
-        toggleSidebar();
-    }
-
-    // --- SINCRONIZACIÓN DESDE LA NUBE (Para compartir fotos) ---
-    async function syncCloud() {
-        document.getElementById('global-loader').style.display = 'block';
-        try {
-            // Buscamos las fotos subidas con el tag compartido
-            const response = await fetch(`https://res.cloudinary.com/${CLOUD_NAME}/image/list/${SHARED_TAG}.json?nocache=${Date.now()}`);
-            const data = await response.json();
-            
-            cloudData = data.resources.map(img => ({
-                url: `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/${img.public_id}.${img.format}`,
-                dateKey: img.context?.custom?.date || "",
-                note: img.context?.custom?.caption || ""
-            }));
-            
-            localStorage.setItem('ayber_shared_cache', JSON.stringify(cloudData));
-            renderCalendar();
-        } catch(e) {
-            const saved = localStorage.getItem('ayber_shared_cache');
-            if(saved) cloudData = JSON.parse(saved);
-            renderCalendar();
-        }
-        document.getElementById('global-loader').style.display = 'none';
-    }
-
-    function renderCalendar() {
-        const grid = document.getElementById('calendar');
-        grid.innerHTML = "";
-        const m = viewDate.getMonth(), y = viewDate.getFullYear();
-        document.getElementById('btn-month').innerText = meses[m];
-        document.getElementById('btn-year').innerText = y;
-        ["D","L","M","M","J","V","S"].forEach(d => grid.innerHTML += `<div class="day-name">${d}</div>`);
-        const firstDay = new Date(y, m, 1).getDay();
-        const days = new Date(y, m + 1, 0).getDate();
-        for(let i=0; i<firstDay; i++) grid.innerHTML += `<div></div>`;
-        for(let d=1; d<=days; d++) {
-            const key = `${y}-${m+1}-${d}`;
-            const hasData = cloudData.some(x => x.dateKey === key) ? 'has-content' : '';
-            const isToday = (new Date().toDateString() === new Date(y, m, d).toDateString()) ? 'today' : '';
-            grid.innerHTML += `<div class="day ${isToday} ${hasData}" onclick="openDay('${key}', ${d})">${d}</div>`;
-        }
-    }
-
-    // --- WHATSAPP CHANCHITO (Local por ahora) ---
-    function sendChatMessage() {
-        const input = document.getElementById('chatInput');
-        if(!input.value.trim()) return;
-        const msg = { text: input.value, time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), mine: true };
-        messages.push(msg);
-        localStorage.setItem('chanchito_msgs', JSON.stringify(messages));
-        input.value = "";
-        renderChat();
-    }
-
-    function renderChat() {
-        const container = document.getElementById('chat-container');
-        container.innerHTML = messages.map(m => `
-            <div class="msg ${m.mine ? 'sent' : 'received'}">
-                ${m.text} <br>
-                <small style="font-size:10px; opacity:0.6; display:block; text-align:right; margin-top:5px;">${m.time}</small>
-            </div>
-        `).join('');
-        container.scrollTop = container.scrollHeight;
-    }
-
-    function saveNotif() {
-        const date = document.getElementById('notifDate').value;
-        const reason = document.getElementById('notifReason').value;
-        if(!date || !reason) return alert("Por favor, llena ambos campos");
-        reminders.push({ date, reason });
-        localStorage.setItem('ayber_reminders', JSON.stringify(reminders));
-        renderNotifList();
-        alert("¡Recordatorio guardado!");
-    }
-
-    function renderNotifList() {
-        const container = document.getElementById('notif-list-container');
-        container.innerHTML = reminders.length ? "<h3>Listado:</h3>" : "<p style='color:#8e8e93'>No hay avisos programados</p>";
-        reminders.forEach((r, index) => {
-            container.innerHTML += `<div class="notif-item"><div><b>${r.reason}</b><div style="font-size:13px">${r.date}</div></div><button onclick="deleteNotif(${index})" style="background:none;border:none;color:#ff453a;font-size:18px;">✕</button></div>`;
-        });
-    }
-
-    function deleteNotif(index) {
-        reminders.splice(index, 1);
-        localStorage.setItem('ayber_reminders', JSON.stringify(reminders));
-        renderNotifList();
-    }
-
-    function checkTodayReminders() {
-        const today = new Date().toISOString().split('T')[0];
-        reminders.forEach(r => { if(r.date === today) setTimeout(() => alert(`🔔 HOY: ${r.reason}`), 1000); });
-    }
-
-    function openWheel(type) {
-        const modal = document.getElementById('wheel-modal');
-        const content = document.getElementById('wheel-content');
-        content.innerHTML = "";
-        if(type === 'month') meses.forEach((name, i) => content.innerHTML += `<div class="wheel-item" onclick="selectMonth(${i})">${name}</div>`);
-        else for(let y=2024; y<=2030; y++) content.innerHTML += `<div class="wheel-item" onclick="selectYear(${y})">${y}</div>`;
-        modal.style.display = 'flex';
-    }
-    function closeWheel() { document.getElementById('wheel-modal').style.display = 'none'; }
-    function selectMonth(m) { viewDate.setMonth(m); closeWheel(); renderCalendar(); }
-    function selectYear(y) { viewDate.setFullYear(y); closeWheel(); renderCalendar(); }
-
-    // --- SUBIDA CON ETIQUETAS COMPARTIDAS ---
-    async function handleUpload() {
-        const file = document.getElementById('fileInput').files[0];
-        const note = document.getElementById('noteInput').value;
-        if(!file) return alert("Elige una foto");
-        
-        const btn = document.getElementById('uploadBtn');
-        btn.disabled = true;
-        btn.innerText = "Subiendo...";
-        document.getElementById('global-loader').style.display = 'block';
-
-        const fd = new FormData();
-        fd.append("file", file);
-        fd.append("upload_preset", UPLOAD_PRESET);
-        fd.append("tags", SHARED_TAG); // Clave para que aparezca en ambos dispositivos
-        fd.append("context", `caption=${note}|date=${currentKey}`);
-
-        try {
-            const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {method:"POST", body:fd});
-            const data = await res.json();
-            if(data.secure_url) {
-                alert("¡Subido!");
-                await syncCloud(); // Refrescar para ver la nueva foto
-                renderPhotos();
+        function validateLogin(e) {
+            e.stopPropagation();
+            if (passwordInput.value === "1234") {
+                loadingModal.style.display = "flex";
+                setTimeout(() => {
+                    loadingModal.style.display = "none";
+                    passwordInput.value = "";
+                    window.location.href = "index2.html";
+                }, 2500);
+            } else {
+                passwordInput.value = "";
+                passwordInput.classList.add('error');
+                passwordInput.placeholder = "¡Incorrecto! ❌";
+                
+                setTimeout(() => {
+                    passwordInput.classList.remove('error');
+                    passwordInput.placeholder = "Contraseña";
+                }, 2000);
             }
-        } catch(e) { alert("Error de conexión"); }
-        
-        btn.disabled = false;
-        btn.innerText = "Subir para ambos";
-        document.getElementById('global-loader').style.display = 'none';
-    }
+        }
 
-    function openDay(key, d) {
-        currentKey = key;
-        document.getElementById('day-title').innerText = `${d} de ${meses[viewDate.getMonth()]} ${viewDate.getFullYear()}`;
-        document.getElementById('day-view').style.display = 'block';
-        renderPhotos();
-    }
-
-    function renderPhotos() {
-        const container = document.getElementById('photo-container');
-        const photos = cloudData.filter(x => x.dateKey === currentKey);
-        container.innerHTML = photos.length ? "" : "<p style='text-align:center; color:#8e8e93'>No hay recuerdos</p>";
-        photos.forEach(p => {
-            container.innerHTML += `
-                <div class="photo-card">
-                    <img src="${p.url}">
-                    <div class="card-meta">
-                        <p>${p.note}</p>
-                        <button class="btn-download" onclick="window.open('${p.url}')">📥 Ver/Descargar</button>
-                    </div>
-                </div>
-            `;
+        toggleEye.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            toggleEye.classList.toggle('hidden-eye');
         });
-    }
 
-    function closeDayView() { document.getElementById('day-view').style.display = 'none'; renderCalendar(); }
-</script>
+        function showFury(e) {
+            e.stopPropagation();
+            loginContainer.style.opacity = "0";
+            setTimeout(() => {
+                loginContainer.style.display = "none";
+                containerFurioso.style.display = "flex";
+                setTimeout(() => {
+                    imgFurioso.classList.add('show');
+                    navButtons.classList.add('show');
+                }, 50);
+            }, 500);
+        }
+
+        function goBack(e) {
+            e.stopPropagation();
+            imgFurioso.classList.remove('show');
+            navButtons.classList.remove('show');
+            setTimeout(() => {
+                containerFurioso.style.display = "none";
+                loginContainer.style.display = "block";
+                setTimeout(() => { loginContainer.style.opacity = "1"; }, 50);
+            }, 600);
+        }
+
+        function exitPage(e) {
+            e.stopPropagation();
+            window.location.href = "about:blank";
+        }
+
+        function createHeartBase(x, y, size) {
+            const heart = document.createElement('div');
+            heart.className = 'heart-bubble';
+            heart.style.width = size + 'px';
+            heart.style.height = size + 'px';
+            heart.style.left = (x - size / 2) + 'px';
+            heart.style.top = (y - size / 2) + 'px';
+            
+            heart.innerHTML = `
+                <svg class="heart-shape" viewBox="0 0 32 29.6">
+                    <path d="M23.6,0c-3.4,0-6.3,2.7-7.6,5.6C14.7,2.7,11.8,0,8.4,0C3.8,0,0,3.8,0,8.4c0,9.4,9.5,11.9,16,21.2 c6.1-9.3,16-12.1,16-21.2C32,3.8,28.2,0,23.6,0z"/>
+                </svg>
+                <span class="heart-text">Te amo</span>
+            `;
+
+            const duration = Math.random() * 2 + 3;
+            heart.style.animationDuration = duration + 's';
+            document.body.appendChild(heart);
+            setTimeout(() => heart.remove(), duration * 1000);
+        }
+
+        function createHeartAuto() {
+            const size = Math.random() * 20 + 40; 
+            createHeartBase(Math.random() * window.innerWidth, window.innerHeight + 50, size);
+        }
+
+        function createHeartClick(e) {
+            createHeartBase(e.clientX, e.clientY, Math.random() * 40 + 60);
+        }
+
+        setInterval(createHeartAuto, 1000);
+    </script>
 </body>
 </html>
