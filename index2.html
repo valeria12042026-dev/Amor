@@ -21,24 +21,18 @@
             overflow-x: hidden;
         }
 
-        /* SELECTOR DE USUARIO - AHORA OCULTO POR DEFECTO */
+        /* OVERLAY DE USUARIO */
         #user-selector-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg); z-index: 5000; display: none; /* Cambiado de flex a none */
+            background: var(--bg); z-index: 5000; display: flex;
             flex-direction: column; align-items: center; justify-content: center;
         }
 
         /* HEADER */
         .header { padding: 40px 20px 10px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: var(--bg); z-index: 100; }
-        .selectors { display: flex; gap: 10px; }
-        .selector-btn {
-            background: rgba(10, 132, 255, 0.15);
-            color: var(--accent); padding: 8px 15px; border-radius: 20px;
-            font-weight: bold; font-size: 14px; border: none; cursor: pointer;
-        }
-
-        /* MENU HAMBURGUESA */
         .hamburger { font-size: 24px; cursor: pointer; color: var(--accent); background: none; border: none; z-index: 1100; }
+        
+        /* SIDEBAR */
         .sidebar {
             position: fixed; top: 0; left: -280px; width: 280px; height: 100%;
             background: var(--card); z-index: 1000; transition: 0.3s;
@@ -46,397 +40,146 @@
         }
         .sidebar.active { left: 0; }
         .sidebar-item { padding: 18px 25px; font-size: 18px; color: var(--text); display: flex; align-items: center; gap: 15px; cursor: pointer; border-bottom: 1px solid #2c2c2e; }
-        .sidebar-item.active { color: var(--accent); background: rgba(10, 132, 255, 0.1); }
+        
+        /* BLOQUEO Y FLECHA */
+        .disabled-item { opacity: 0.3; cursor: not-allowed !important; pointer-events: none; }
+        .pointer-arrow { 
+            margin-left: auto; 
+            animation: point-left 0.8s infinite alternate; 
+            color: var(--accent);
+            font-weight: bold;
+        }
+        @keyframes point-left { from { transform: translateX(0); } to { transform: translateX(-10px); } }
 
         /* SECCIONES */
         .view-section { display: none; padding: 0; animation: fadeIn 0.3s; }
         .view-section.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        /* CALENDARIO */
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; padding: 15px; }
-        .day-name { text-align: center; font-size: 12px; color: var(--text-sec); padding-bottom: 10px; }
-        .day { 
-            aspect-ratio: 1/1; display: flex; align-items: center; justify-content: center; 
-            border-radius: 50%; font-size: 17px; cursor: pointer; position: relative;
-        }
-        .day.today { color: var(--accent); font-weight: bold; border: 1px solid var(--accent); }
-        .day.has-content::after { 
-            content: ''; position: absolute; bottom: 6px; width: 4px; height: 4px; 
-            background: var(--green); border-radius: 50%; 
-        }
-
+        
         /* WHATSAPP CHANCHITO */
-        #chat-view { padding: 20px; display: flex; flex-direction: column; height: 75vh; }
+        #chat-view { padding: 20px; display: flex; flex-direction: column; height: 85vh; }
         #chat-container { flex: 1; overflow-y: auto; background: #000; border-radius: 20px; padding: 15px; border: 1px solid #2c2c2e; margin-bottom: 15px; display: flex; flex-direction: column; }
         .msg { margin-bottom: 10px; padding: 12px 16px; border-radius: 18px; max-width: 80%; word-wrap: break-word; font-size: 15px; position: relative; }
         .msg.sent { background: #005c4b; align-self: flex-end; color: white; border-bottom-right-radius: 2px; }
         .msg.received { background: #202c33; align-self: flex-start; color: white; border-bottom-left-radius: 2px; }
         .chat-input-area { display: flex; gap: 10px; padding-bottom: 20px; }
         .chat-input-area input { flex: 1; background: var(--card); border: none; padding: 15px; border-radius: 20px; color: white; outline: none; }
-        .btn-del { font-size: 10px; opacity: 0.4; cursor: pointer; margin-bottom: 5px; display: block; }
         
-        /* NOTIFICACIONES */
-        #notif-view { padding: 20px; }
-        .notif-form { background: var(--card); padding: 20px; border-radius: 25px; margin-bottom: 25px; }
-        .notif-form input { width: 100%; background: #2c2c2e; border: none; padding: 14px; border-radius: 12px; color: white; margin-bottom: 12px; box-sizing: border-box; }
-        .notif-item { background: var(--card); padding: 15px; border-radius: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--accent); }
-
-        /* MODALES Y VISTA DE DÍA */
-        .modal-wheel-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; align-items: center; justify-content: center; }
-        .wheel-container { background: var(--card); width: 85%; max-height: 60vh; border-radius: 30px; padding: 20px; overflow-y: auto; text-align: center; }
-        .wheel-item { padding: 18px; font-size: 20px; border-bottom: 1px solid #2c2c2e; color: var(--text-sec); cursor: pointer; }
-        .wheel-item.active { color: var(--accent); font-weight: bold; }
-
-        #day-view { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 3000; overflow-y: auto; padding: 20px; box-sizing: border-box; }
-        .back-nav { color: var(--accent); cursor: pointer; margin-bottom: 25px; font-size: 18px; }
-        .upload-form { background: var(--card); padding: 20px; border-radius: 25px; margin-bottom: 25px; }
-        .upload-form input, .upload-form textarea { width: 100%; background: #2c2c2e; border: none; padding: 14px; border-radius: 12px; color: white; margin-bottom: 12px; box-sizing: border-box; font-family: inherit; }
         .save-btn { background: var(--accent); color: white; border: none; width: 100%; padding: 16px; border-radius: 15px; font-weight: bold; cursor: pointer; }
-
-        .photo-card { background: var(--card); border-radius: 25px; overflow: hidden; margin-bottom: 20px; }
-        .photo-card img { width: 100%; display: block; }
-        .card-meta { padding: 15px; }
-        .btn-download { background: #2c2c2e; color: var(--accent); border: none; padding: 8px 15px; border-radius: 10px; cursor: pointer; font-weight: bold; }
-
-        #global-loader { position: fixed; top: 10px; right: 10px; font-size: 12px; color: var(--accent); display: none; z-index: 4000; }
     </style>
 </head>
 <body>
 
     <div id="user-selector-overlay">
-        <h2>¿Quién eres?</h2>
+        <h2 style="margin-bottom:30px">¿Quién eres?</h2>
         <button class="save-btn" onclick="setUser('Ayber')" style="margin-bottom: 20px; width: 200px;">Soy Ayber</button>
         <button class="save-btn" onclick="setUser('Valeria')" style="background: #ff375f; width: 200px;">Soy Mia</button>
     </div>
 
-    <div id="global-loader">Sincronizando nube...</div>
-
     <div class="header">
-        <button class="hamburger" onclick="toggleSidebar()">☰</button>
+        <button class="hamburger" id="hamBtn" onclick="toggleSidebar()">☰</button>
         <h1 id="view-title">Menú</h1>
-        <div class="selectors" id="header-selectors">
-            <button class="selector-btn" onclick="openWheel('month')" id="btn-month">Mayo</button>
-            <button class="selector-btn" onclick="openWheel('year')" id="btn-year">2026</button>
-        </div>
     </div>
 
     <div id="sidebar" class="sidebar">
-        <div class="sidebar-item active" onclick="navigate('calendar')">📅 Calendario</div>
-        <div class="sidebar-item" onclick="navigate('chat')">🐷 WhatsApp Chanchito</div>
-        <div class="sidebar-item" onclick="navigate('notifs')">🔔 Notificaciones</div>
+        <div class="sidebar-item disabled-item">📅 Calendario</div>
+        <div class="sidebar-item" id="chat-option" onclick="navigate('chat')" style="border-left: 4px solid var(--accent); background: rgba(10, 132, 255, 0.1);">
+            🐷 WhatsApp Chanchito <span class="pointer-arrow">⬅️</span>
+        </div>
+        <div class="sidebar-item disabled-item">🔔 Notificaciones</div>
     </div>
 
-    <div id="section-calendar" class="view-section active">
-        <div id="calendar" class="calendar-grid"></div>
-    </div>
+    <div id="section-calendar" class="view-section"></div>
 
     <div id="section-chat" class="view-section">
         <div id="chat-view">
-            <div style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
-                <button class="selector-btn" style="background: rgba(255,69,58,0.2); color:#ff453a;" onclick="clearFullChat()">Vaciar Chat</button>
-            </div>
             <div id="chat-container"></div>
             <div class="chat-input-area">
                 <input type="text" id="chatInput" placeholder="Escribe un mensaje...">
-                <button class="selector-btn" onclick="sendChatMessage()">Enviar</button>
+                <button class="save-btn" onclick="sendChatMessage()" style="width: auto; padding: 10px 20px;">Enviar</button>
             </div>
         </div>
-    </div>
-
-    <div id="section-notifs" class="view-section">
-        <div id="notif-view">
-            <div class="notif-form">
-                <p style="margin-top:0">Programar Aviso:</p>
-                <input type="date" id="notifDate">
-                <input type="text" id="notifReason" placeholder="Motivo">
-                <button class="save-btn" onclick="saveNotif()">Guardar Recordatorio</button>
-            </div>
-            <div id="notif-list-container"></div>
-        </div>
-    </div>
-
-    <div id="wheel-modal" class="modal-wheel-overlay" onclick="closeWheel()">
-        <div class="wheel-container" id="wheel-content" onclick="event.stopPropagation()"></div>
-    </div>
-
-    <div id="day-view">
-        <div class="back-nav" onclick="closeDayView()">❮ Calendario</div>
-        <h2 id="day-title"></h2>
-        <div class="upload-form">
-            <input type="file" id="fileInput" accept="image/*">
-            <textarea id="noteInput" placeholder="Escribe un comentario..."></textarea>
-            <button class="save-btn" onclick="handleUpload()">Subir para ambos</button>
-        </div>
-        <div id="photo-container"></div>
     </div>
 
 <script>
-    const CLOUD_NAME = "dpd2vbg6m";
-    const UPLOAD_PRESET = "sqeyefdi";
-    const SHARED_TAG = "ayber_valeria_2026";
-    
     const SUPABASE_URL = 'https://ckiozwumzoqcyfbiazjf.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_6JzDCmB92cBB_tqmJLnGEg_-JpP3MuG';
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    let miUsuario = ""; // Aquí se guarda si eres Ayber o Valeria
-    let viewDate = new Date(2026, 4, 1);
-    let currentKey = "";
-    let cloudData = [];
-    const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-    let reminders = JSON.parse(localStorage.getItem('ayber_reminders') || "[]");
+    let miUsuario = "";
+    let systemLocked = true; // Bloqueo inicial
 
-    // FUNCIÓN PARA ELEGIR USUARIO
     function setUser(nombre) {
         miUsuario = nombre;
         document.getElementById('user-selector-overlay').style.display = 'none';
+        
+        // Notificación de entrada
+        setTimeout(() => {
+            alert("🔔 Ayber te ha enviado un mensaje");
+            // Forzar apertura de menú y señalar el chat
+            document.getElementById('sidebar').classList.add('active');
+        }, 500);
+
         initChatSystem();
     }
 
-    window.onload = () => {
-        syncCloud();
-        renderNotifList();
-        checkTodayReminders();
-    };
-
-    function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
+    function toggleSidebar() { 
+        // Solo permite cerrar si ya no está bloqueado (opcional, aquí lo mantengo abierto)
+        if(!systemLocked) {
+            document.getElementById('sidebar').classList.toggle('active'); 
+        }
+    }
 
     function navigate(section) {
-        // SI SE ENTRA AL CHAT Y NO HAY USUARIO, MOSTRAR EL SELECTOR
-        if (section === 'chat' && miUsuario === "") {
-            document.getElementById('user-selector-overlay').style.display = 'flex';
-        }
-
-        document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
-        document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
-        document.getElementById(`section-${section}`).classList.add('active');
-        document.getElementById('header-selectors').style.display = (section === 'calendar') ? 'flex' : 'none';
-        const titles = { 'calendar': 'Galería', 'chat': 'Chanchito Chat', 'notifs': 'Avisos' };
-        document.getElementById('view-title').innerText = titles[section];
-        
-        // CORRECCIÓN: Usar event.currentTarget solo si existe, si no buscar el elemento por texto
-        const items = document.querySelectorAll('.sidebar-item');
-        items.forEach(item => {
-            if(item.innerText.toLowerCase().includes(section === 'chat' ? 'chanchito' : section)) {
-                item.classList.add('active');
-            } else {
-                item.classList.remove('active');
-            }
-        });
-
-        toggleSidebar();
-    }
-
-    // --- CLOUDINARY ---
-    async function syncCloud() {
-        document.getElementById('global-loader').style.display = 'block';
-        try {
-            const res = await fetch(`https://res.cloudinary.com/${CLOUD_NAME}/image/list/${SHARED_TAG}.json?v=${new Date().getTime()}`);
-            if (res.ok) {
-                const data = await res.json();
-                cloudData = data.resources.map(img => ({
-                    id: img.public_id, // Guardamos ID para borrar
-                    url: `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/${img.public_id}.${img.format}`,
-                    dateKey: img.context?.custom?.date || "",
-                    note: img.context?.custom?.caption || ""
-                }));
-                localStorage.setItem('ayber_shared_cache', JSON.stringify(cloudData));
-            }
-        } catch(e) {}
-        renderCalendar();
-        document.getElementById('global-loader').style.display = 'none';
-    }
-
-    function renderCalendar() {
-        const grid = document.getElementById('calendar'); grid.innerHTML = "";
-        const m = viewDate.getMonth(), y = viewDate.getFullYear();
-        document.getElementById('btn-month').innerText = meses[m];
-        document.getElementById('btn-year').innerText = y;
-        ["D","L","M","M","J","V","S"].forEach(d => grid.innerHTML += `<div class="day-name">${d}</div>`);
-        const firstDay = new Date(y, m, 1).getDay();
-        const days = new Date(y, m + 1, 0).getDate();
-        for(let i=0; i<firstDay; i++) grid.innerHTML += `<div></div>`;
-        for(let d=1; d<=days; d++) {
-            const key = `${y}-${m+1}-${d}`;
-            const hasData = cloudData.some(x => x.dateKey === key) ? 'has-content' : '';
-            const isToday = (new Date().toDateString() === new Date(y, m, d).toDateString()) ? 'today' : '';
-            grid.innerHTML += `<div class="day ${isToday} ${hasData}" onclick="openDay('${key}', ${d})">${d}</div>`;
+        if (section === 'chat') {
+            // Al entrar al chat por primera vez, desactivamos la flecha y el bloqueo si deseas
+            systemLocked = false;
+            document.querySelector('.pointer-arrow').style.display = 'none';
+            document.getElementById('sidebar').classList.remove('active');
+            
+            document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+            document.getElementById(`section-chat`).classList.add('active');
+            document.getElementById('view-title').innerText = 'Chanchito Chat';
+            
+            // Habilitar las otras opciones tras entrar al chat
+            document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('disabled-item'));
         }
     }
 
-    // --- CHAT REALTIME (OPTIMIZADO) ---
+    // --- SISTEMA DE CHAT ---
     async function initChatSystem() {
-        const { data, error } = await _supabase.from('mensajes').select('*').order('created_at', { ascending: true });
-        
-        if (error) {
-            console.error("Error cargando mensajes:", error);
-            return;
-        }
-
+        const { data } = await _supabase.from('mensajes').select('*').order('created_at', { ascending: true });
         const container = document.getElementById('chat-container');
         container.innerHTML = ""; 
-        
         if(data) {
             data.forEach(m => drawMessage(m));
             container.scrollTop = container.scrollHeight;
         }
 
         _supabase.channel('mensajes-realtime')
-        .on('postgres_changes', 
-            { event: 'INSERT', schema: 'public', table: 'mensajes' }, 
-            (payload) => {
-                drawMessage(payload.new);
-                container.scrollTop = container.scrollHeight;
-            }
-        )
-        .on('postgres_changes',
-            { event: 'DELETE', schema: 'public', table: 'mensajes' },
-            (payload) => {
-                const el = document.getElementById(`msg-${payload.old.id}`);
-                if(el) el.remove();
-            }
-        )
-        .subscribe();
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mensajes' }, (payload) => {
+            drawMessage(payload.new);
+            container.scrollTop = container.scrollHeight;
+        }).subscribe();
     }
 
     function drawMessage(m) {
         const container = document.getElementById('chat-container');
-        const esMio = (m.user === miUsuario);
-        
         if (document.getElementById(`msg-${m.id}`)) return;
-
+        const esMio = (m.user === miUsuario);
         const msgDiv = document.createElement('div');
         msgDiv.id = `msg-${m.id}`;
         msgDiv.className = `msg ${esMio ? 'sent' : 'received'}`;
-        msgDiv.innerHTML = `
-            <span class="btn-del" onclick="deleteThisMessage(${m.id})">🗑️</span>
-            ${m.text}
-            <small style="font-size:10px; opacity:0.6; display:block; text-align:right; margin-top:5px;">${m.time}</small>
-        `;
+        msgDiv.innerHTML = `${m.text}<small style="font-size:10px; opacity:0.6; display:block; text-align:right; margin-top:5px;">${m.time}</small>`;
         container.appendChild(msgDiv);
     }
 
     async function sendChatMessage() {
         const input = document.getElementById('chatInput');
-        if(!input.value.trim() || miUsuario === "") return;
+        if(!input.value.trim()) return;
         const now = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        
-        const { error } = await _supabase.from('mensajes').insert([{ user: miUsuario, text: input.value, time: now }]);
-        
-        if (error) {
-            alert("Error al enviar: " + error.message);
-        } else {
-            input.value = "";
-        }
+        await _supabase.from('mensajes').insert([{ user: miUsuario, text: input.value, time: now }]);
+        input.value = "";
     }
-
-    async function deleteThisMessage(id) {
-        if(confirm("¿Borrar?")) {
-            await _supabase.from('mensajes').delete().eq('id', id);
-        }
-    }
-
-    async function clearFullChat() {
-        if(confirm("¿Vaciar chat?")) {
-            await _supabase.from('mensajes').delete().neq('id', 0);
-        }
-    }
-
-    // --- RESTO DE FUNCIONES (CALENDARIO/NOTIF) ---
-    function saveNotif() {
-        const date = document.getElementById('notifDate').value;
-        const reason = document.getElementById('notifReason').value;
-        if(!date || !reason) return;
-        reminders.push({ date, reason });
-        localStorage.setItem('ayber_reminders', JSON.stringify(reminders));
-        renderNotifList();
-    }
-
-    function renderNotifList() {
-        const container = document.getElementById('notif-list-container');
-        container.innerHTML = reminders.length ? "<h3>Listado:</h3>" : "";
-        reminders.forEach((r, index) => {
-            container.innerHTML += `<div class="notif-item"><div><b>${r.reason}</b><br>${r.date}</div><button onclick="deleteNotif(${index})">✕</button></div>`;
-        });
-    }
-
-    function deleteNotif(index) {
-        reminders.splice(index, 1);
-        localStorage.setItem('ayber_reminders', JSON.stringify(reminders));
-        renderNotifList();
-    }
-
-    function checkTodayReminders() {
-        const today = new Date().toISOString().split('T')[0];
-        reminders.forEach(r => { if(r.date === today) alert(`🔔 HOY: ${r.reason}`); });
-    }
-
-    function openWheel(type) {
-        const modal = document.getElementById('wheel-modal');
-        const content = document.getElementById('wheel-content');
-        content.innerHTML = "";
-        if(type === 'month') meses.forEach((name, i) => content.innerHTML += `<div class="wheel-item" onclick="selectMonth(${i})">${name}</div>`);
-        else for(let y=2024; y<=2030; y++) content.innerHTML += `<div class="wheel-item" onclick="selectYear(${y})">${y}</div>`;
-        modal.style.display = 'flex';
-    }
-    function closeWheel() { document.getElementById('wheel-modal').style.display = 'none'; }
-    function selectMonth(m) { viewDate.setMonth(m); closeWheel(); renderCalendar(); }
-    function selectYear(y) { viewDate.setFullYear(y); closeWheel(); renderCalendar(); }
-
-    async function handleUpload() {
-        const file = document.getElementById('fileInput').files[0];
-        const note = document.getElementById('noteInput').value;
-        if(!file) return;
-        document.getElementById('global-loader').style.display = 'block';
-        const fd = new FormData();
-        fd.append("file", file); fd.append("upload_preset", UPLOAD_PRESET);
-        fd.append("tags", SHARED_TAG); fd.append("context", `caption=${note}|date=${currentKey}`);
-        try {
-            const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {method:"POST", body:fd});
-            if(res.ok) { syncCloud(); alert("¡Subido!"); }
-        } catch(e) {}
-        document.getElementById('global-loader').style.display = 'none';
-    }
-
-    function openDay(key, d) {
-        currentKey = key;
-        document.getElementById('day-title').innerText = `${d} de ${meses[viewDate.getMonth()]}`;
-        document.getElementById('day-view').style.display = 'block';
-        renderPhotos();
-    }
-
-    function renderPhotos() {
-        const container = document.getElementById('photo-container');
-        const photos = cloudData.filter(x => x.dateKey === currentKey);
-        container.innerHTML = photos.length ? "" : "Vacío";
-        photos.forEach(p => {
-            container.innerHTML += `
-                <div class="photo-card" id="photo-${p.id}">
-                    <img src="${p.url}">
-                    <div class="card-meta">
-                        <p style="margin-bottom:15px; font-size:14px; color:var(--text);">${p.note || '<i>Sin comentario</i>'}</p>
-                        <div style="display:flex; gap:10px;">
-                            <button class="btn-download" onclick="window.open('${p.url}')" title="Descargar">📥</button>
-                            <button class="btn-download" style="background:#441a1a; color:#ff453a;" onclick="deletePhoto('${p.id}')" title="Borrar">🗑️</button>
-                        </div>
-                    </div>
-                </div>`;
-        });
-    }
-
-    async function deletePhoto(id) {
-        if(!confirm("¿Estás seguro de borrar esta foto para ambos?")) return;
-        // Nota: El borrado cliente-nube en Cloudinary requiere firma o un preset habilitado para borrar.
-        // Como medida inmediata, la ocultamos de la vista y podrías limpiar la etiqueta después.
-        document.getElementById(`photo-${id}`).style.opacity = "0.3";
-        alert("La foto se ha solicitado borrar. Actualiza para confirmar cambios.");
-        // Aquí podrías añadir un fetch a un endpoint si tuvieras backend, o simplemente filtrar cloudData
-        cloudData = cloudData.filter(x => x.id !== id);
-        renderPhotos();
-    }
-
-    function closeDayView() { document.getElementById('day-view').style.display = 'none'; renderCalendar(); }
 </script>
 </body>
 </html>
