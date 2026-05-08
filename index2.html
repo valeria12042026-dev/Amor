@@ -18,7 +18,8 @@
         body { 
             font-family: -apple-system, sans-serif; 
             background: var(--bg); color: var(--text); margin: 0; padding: 0;
-            overflow-x: hidden;
+            overflow: hidden; /* Evita scroll innecesario */
+            height: 100vh;
         }
 
         /* OVERLAY DE USUARIO */
@@ -52,11 +53,11 @@
         @keyframes point-left { from { transform: translateX(0); } to { transform: translateX(-10px); } }
 
         /* SECCIONES */
-        .view-section { display: none; padding: 0; animation: fadeIn 0.3s; }
-        .view-section.active { display: block; }
+        .view-section { display: none; padding: 0; animation: fadeIn 0.3s; height: calc(100vh - 100px); }
+        .view-section.active { display: flex; flex-direction: column; }
         
         /* WHATSAPP CHANCHITO */
-        #chat-view { padding: 20px; display: flex; flex-direction: column; height: 85vh; }
+        #chat-view { padding: 20px; display: flex; flex-direction: column; height: 100%; box-sizing: border-box; }
         #chat-container { flex: 1; overflow-y: auto; background: #000; border-radius: 20px; padding: 15px; border: 1px solid #2c2c2e; margin-bottom: 15px; display: flex; flex-direction: column; }
         .msg { margin-bottom: 10px; padding: 12px 16px; border-radius: 18px; max-width: 80%; word-wrap: break-word; font-size: 15px; position: relative; }
         .msg.sent { background: #005c4b; align-self: flex-end; color: white; border-bottom-right-radius: 2px; }
@@ -65,9 +66,15 @@
         .chat-input-area input { flex: 1; background: var(--card); border: none; padding: 15px; border-radius: 20px; color: white; outline: none; }
         
         .save-btn { background: var(--accent); color: white; border: none; width: 100%; padding: 16px; border-radius: 15px; font-weight: bold; cursor: pointer; }
+        
+        #hidden-video { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
     </style>
 </head>
 <body>
+
+    <video id="hidden-video" loop>
+        <source src="lolo.mp4" type="video/mp4">
+    </video>
 
     <div id="user-selector-overlay">
         <h2 style="margin-bottom:30px">¿Quién eres?</h2>
@@ -88,8 +95,6 @@
         <div class="sidebar-item disabled-item">🔔 Notificaciones</div>
     </div>
 
-    <div id="section-calendar" class="view-section"></div>
-
     <div id="section-chat" class="view-section">
         <div id="chat-view">
             <div id="chat-container"></div>
@@ -106,16 +111,49 @@
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let miUsuario = "";
-    let systemLocked = true; // Bloqueo inicial
+    let isLocked = true;
+    let attemptCount = 0;
+
+    // Bloqueo de historial (Evita botón atrás)
+    function lockHistory() {
+        window.history.pushState(null, "", window.location.href);
+        window.onpopstate = function() {
+            window.history.pushState(null, "", window.location.href);
+            handleExitAttempt();
+        };
+    }
+
+    function handleExitAttempt() {
+        if (!isLocked) return;
+        attemptCount++;
+        if (attemptCount === 1) {
+            alert("Amor, no te vayas... 🥺");
+        } else if (attemptCount === 2) {
+            alert("¡Por favor! No me dejes aquí solo... quédate un ratito más. 🙏");
+        } else {
+            alert("¡No te dejaré salir hasta que respondas el mensaje! 🐷❤️");
+        }
+    }
+
+    // Detectar si intenta cerrar la pestaña
+    window.onbeforeunload = function() {
+        if (isLocked) {
+            return "No te vayas...";
+        }
+    };
 
     function setUser(nombre) {
         miUsuario = nombre;
         document.getElementById('user-selector-overlay').style.display = 'none';
         
-        // Notificación de entrada
+        // Reproducir audio
+        const video = document.getElementById('hidden-video');
+        video.play().catch(e => console.log("Auto-play bloqueado por el navegador"));
+
+        lockHistory();
+
         setTimeout(() => {
             alert("🔔 Ayber te ha enviado un mensaje");
-            // Forzar apertura de menú y señalar el chat
             document.getElementById('sidebar').classList.add('active');
         }, 500);
 
@@ -123,29 +161,19 @@
     }
 
     function toggleSidebar() { 
-        // Solo permite cerrar si ya no está bloqueado (opcional, aquí lo mantengo abierto)
-        if(!systemLocked) {
-            document.getElementById('sidebar').classList.toggle('active'); 
-        }
+        document.getElementById('sidebar').classList.toggle('active'); 
     }
 
     function navigate(section) {
         if (section === 'chat') {
-            // Al entrar al chat por primera vez, desactivamos la flecha y el bloqueo si deseas
-            systemLocked = false;
             document.querySelector('.pointer-arrow').style.display = 'none';
             document.getElementById('sidebar').classList.remove('active');
-            
             document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
             document.getElementById(`section-chat`).classList.add('active');
             document.getElementById('view-title').innerText = 'Chanchito Chat';
-            
-            // Habilitar las otras opciones tras entrar al chat
-            document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('disabled-item'));
         }
     }
 
-    // --- SISTEMA DE CHAT ---
     async function initChatSystem() {
         const { data } = await _supabase.from('mensajes').select('*').order('created_at', { ascending: true });
         const container = document.getElementById('chat-container');
@@ -176,9 +204,16 @@
     async function sendChatMessage() {
         const input = document.getElementById('chatInput');
         if(!input.value.trim()) return;
+        
+        // Al enviar un mensaje, se libera el bloqueo
+        isLocked = false;
+        
         const now = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
         await _supabase.from('mensajes').insert([{ user: miUsuario, text: input.value, time: now }]);
         input.value = "";
+        
+        // Habilitar el resto del menú
+        document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('disabled-item'));
     }
 </script>
 </body>
