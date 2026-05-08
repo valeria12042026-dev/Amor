@@ -3,363 +3,205 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Login - Ayber</title>
+    <title>Mía - Te Extraño</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent; /* Quita el destello azul en móviles */
+            -webkit-tap-highlight-color: transparent;
         }
 
         body, html {
             height: 100%;
             width: 100%;
             overflow: hidden;
-            background-color: black;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: radial-gradient(circle, #1a1a1a 0%, #000000 100%);
+            font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* --- TEXTO SUPERIOR CON PARPADEO --- */
+        .header-text {
+            position: absolute;
+            top: 12%;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 2.2rem;
+            font-weight: bold;
+            text-align: center;
+            width: 90%;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            z-index: 10;
+            animation: breathe 4s infinite ease-in-out;
+        }
+
+        @keyframes breathe {
+            0%, 100% { opacity: 0.3; transform: scale(0.95); }
+            50% { opacity: 0.9; transform: scale(1); }
+        }
+
+        /* --- ICONO TRISTE (REEMPLAZO DE ALBUM) --- */
+        .sad-icon-container {
+            margin-bottom: 40px;
+            position: relative;
             display: flex;
             justify-content: center;
             align-items: center;
         }
 
-        /* --- NOMBRES ANIMADOS --- */
-        .nombre-fondo {
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            color: white;
-            font-size: 3rem; /* Tamaño más manejable para móviles */
-            font-weight: bold;
-            letter-spacing: 5px;
-            z-index: 1;
-            opacity: 0;
-            pointer-events: none;
-            text-transform: uppercase;
-            width: 100%;
-            text-align: center;
+        .broken-heart {
+            width: 80px;
+            height: 80px;
+            fill: #444; /* Gris oscuro */
+            animation: pulse-slow 3s infinite;
         }
 
-        .superior { top: 10vh; animation: zoomNombre 5s infinite ease-in-out; }
-        .inferior { bottom: 10vh; animation: zoomNombre 5s infinite ease-in-out 2.5s; }
-
-        @keyframes zoomNombre {
-            0% { transform: translateX(-50%) scale(0.6); opacity: 0; }
-            30% { transform: translateX(-50%) scale(1); opacity: 0.2; }
-            60% { transform: translateX(-50%) scale(0.9); opacity: 0.1; }
-            100% { transform: translateX(-50%) scale(0.4); opacity: 0; }
+        @keyframes pulse-slow {
+            0% { transform: scale(1); opacity: 0.4; }
+            50% { transform: scale(1.1); opacity: 0.6; }
+            100% { transform: scale(1); opacity: 0.4; }
         }
 
-        /* --- CAJA DE LOGIN (ESTILO APP) --- */
+        /* --- CAJA DE LOGIN --- */
         .login-box {
             position: relative;
             z-index: 100;
-            background: transparent;
-            padding: 20px;
-            width: 90%; /* Se adapta al ancho de la pantalla */
-            max-width: 350px; /* No crece más de esto en PC */
+            width: 85%;
+            max-width: 320px;
             text-align: center;
-            transition: opacity 0.5s ease;
-        }
-
-        .img-decorativa {
-            width: 100%;
-            max-width: 200px;
-            margin-bottom: 20px;
-            border-radius: 15px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
-        }
-
-        .password-container {
-            position: relative;
-            width: 100%;
-            margin-bottom: 20px;
         }
 
         #password {
             width: 100%;
-            padding: 15px;
-            padding-right: 45px; 
-            border: none;
-            font-size: 16px; /* Evita zoom en iPhone */
+            padding: 18px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 16px;
             text-align: center;
-            border-radius: 12px;
-            background: white;
+            border-radius: 30px; /* Estilo más moderno y suave */
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
             outline: none;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-
-        #password.error::placeholder {
-            color: #ff4d4d;
-            font-weight: bold;
-        }
-
-        .toggle-password {
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            cursor: pointer;
-            width: 24px;
-            height: 24px;
-            background-repeat: no-repeat;
-            background-position: center;
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>');
-        }
-
-        .toggle-password.hidden-eye {
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>');
-        }
-
-        .btn-img { 
-            width: 80%; 
-            margin: 0 auto 15px auto; 
-            cursor: pointer; 
-            display: block; 
-            transition: transform 0.2s;
-        }
-        
-        .btn-img:active { transform: scale(0.95); }
-
-        .row { 
-            display: flex; 
-            justify-content: space-between; 
-            gap: 10px;
-        }
-        
-        .btn-img-sm { 
-            cursor: pointer; 
-            width: 48%;
-            border-radius: 8px;
-        }
-
-        /* --- MODAL --- */
-        #loadingModal {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-
-        .modal-content {
-            background: white;
-            padding: 30px;
-            border-radius: 20px;
-            text-align: center;
-            width: 80%;
-            max-width: 300px;
-        }
-
-        .spinner {
-            border: 4px solid #f3f3f3;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            border-top: 4px solid #000;
-            animation: spin 1s linear infinite;
-            margin: 20px auto 0;
-        }
-
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-
-        /* --- SECCIÓN FURIOSO --- */
-        #containerFurioso {
-            position: absolute;
-            z-index: 200;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            width: 90%;
-        }
-
-        #imgFurioso {
-            width: 100%;
-            max-width: 280px;
-            border-radius: 15px;
-            transform: scale(0);
-            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             margin-bottom: 20px;
+            transition: all 0.3s;
         }
 
-        #imgFurioso.show { transform: scale(1); }
-
-        .nav-buttons {
-            display: flex;
-            gap: 15px;
-            opacity: 0;
-            transition: opacity 0.5s ease 0.3s;
+        #password:focus {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.3);
         }
 
-        .nav-buttons.show { opacity: 1; }
+        #password::placeholder {
+            color: rgba(255, 255, 255, 0.3);
+        }
 
-        .btn-nav {
-            background: white;
+        .btn-ingresar {
+            width: 100%;
+            padding: 15px;
             border: none;
-            padding: 12px 25px;
-            border-radius: 10px;
+            border-radius: 30px;
+            background-color: transparent;
+            color: rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            font-size: 14px;
+            letter-spacing: 2px;
             font-weight: bold;
             cursor: pointer;
+            transition: all 0.3s;
         }
 
-        /* --- BURBUJAS --- */
-        .heart-bubble {
+        .btn-ingresar:active {
+            background: white;
+            color: black;
+        }
+
+        /* --- CARITAS TRISTES --- */
+        .sad-face {
             position: absolute;
             pointer-events: none;
-            z-index: 10;
-            animation: float-up-click linear forwards;
+            z-index: 5;
+            animation: float-up-sad linear forwards;
             display: flex;
             flex-direction: column;
             align-items: center;
+            color: rgba(255, 255, 255, 0.2);
         }
 
-        @keyframes float-up-click {
-            0% { transform: translateY(0) scale(0.5); opacity: 0; }
-            10% { opacity: 0.8; }
-            100% { transform: translateY(-100vh) scale(1.2); opacity: 0; }
+        @keyframes float-up-sad {
+            0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+            20% { opacity: 0.4; }
+            100% { transform: translateY(-110vh) rotate(20deg); opacity: 0; }
         }
 
-        .heart-shape { width: 100%; height: 100%; fill: rgba(255,255,255,0.8); }
-        .heart-text { color: black; font-weight: bold; font-size: 10px; position: absolute; top: 35%; }
+        /* --- VIDEO OCULTO --- */
+        #videoOculto { display: none; }
     </style>
 </head>
-<body onclick="createHeartClick(event)">
+<body onclick="iniciarAudio(event)">
 
-    <div class="nombre-fondo superior">MÍA</div>
-    <div class="nombre-fondo inferior">AYBER</div>
+    <h1 class="header-text">MÍA TE EXTRAÑO</h1>
 
-    <div id="loadingModal">
-        <div class="modal-content">
-            <p style="font-weight: bold;">Comprobando si eres mi amorcito...</p>
-            <div class="spinner"></div>
-        </div>
-    </div>
+    <video id="videoOculto" loop>
+        <source src="lolo.mp4" type="video/mp4">
+    </video>
 
-    <div id="containerFurioso">
-        <img src="furioso.jpg" id="imgFurioso">
-        <div class="nav-buttons" id="navButtons">
-            <button class="btn-nav" onclick="goBack(event)">Atrás</button>
-            <button class="btn-nav" onclick="exitPage(event)">Salir</button>
-        </div>
-    </div>
-
-    <div class="login-box" id="loginContainer">
-        <img src="album.jpg" class="img-decorativa">
-
-        <div class="password-container">
-            <input type="password" id="password" placeholder="Contraseña">
-            <span class="toggle-password" id="toggleEye"></span>
+    <div class="login-box">
+        <div class="sad-icon-container">
+            <svg class="broken-heart" viewBox="0 0 24 24">
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z M12 6.5l-1-1 M13 18l-2-2 M15 11l-3 3"/>
+            </svg>
         </div>
 
-        <img src="ingresar.jpg" class="btn-img" id="btnIngresar" onclick="validateLogin(event)">
-
-        <div class="row">
-            <img src="olvide.jpg" id="imgOlvide" class="btn-img-sm" onclick="showFury(event)">
-            <a href="mailto:ayberpisco@gmail.com" onclick="event.stopPropagation();" style="width: 48%;">
-                <img src="otros.jpg" id="imgOtros" style="width: 100%; cursor: pointer; border-radius: 8px;">
-            </a>
-        </div>
+        <input type="password" id="password" placeholder="Contraseña">
+        <button class="btn-ingresar" onclick="validateLogin()">ENTRAR</button>
     </div>
 
     <script>
         const passwordInput = document.getElementById('password');
-        const toggleEye = document.getElementById('toggleEye');
-        const loginContainer = document.getElementById('loginContainer');
-        const containerFurioso = document.getElementById('containerFurioso');
-        const imgFurioso = document.getElementById('imgFurioso');
-        const navButtons = document.getElementById('navButtons');
-        const loadingModal = document.getElementById('loadingModal');
+        const video = document.getElementById('videoOculto');
+        let audioIniciado = false;
 
-        function validateLogin(e) {
-            e.stopPropagation();
+        function iniciarAudio(e) {
+            if (!audioIniciado) {
+                video.play();
+                audioIniciado = true;
+            }
+            createSadFace(e.clientX, e.clientY);
+        }
+
+        function validateLogin() {
             if (passwordInput.value === "timotito11") {
-                loadingModal.style.display = "flex";
-                setTimeout(() => {
-                    loadingModal.style.display = "none";
-                    passwordInput.value = "";
-                    window.location.href = "index2.html";
-                }, 2500);
+                window.location.href = "index2.html";
             } else {
                 passwordInput.value = "";
-                passwordInput.classList.add('error');
-                passwordInput.placeholder = "¡Incorrecto! ❌";
-                
-                setTimeout(() => {
-                    passwordInput.classList.remove('error');
-                    passwordInput.placeholder = "Contraseña";
-                }, 2000);
+                passwordInput.placeholder = "Incorrecto...";
+                setTimeout(() => { passwordInput.placeholder = "Contraseña"; }, 2000);
             }
         }
 
-        toggleEye.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-            passwordInput.setAttribute('type', type);
-            toggleEye.classList.toggle('hidden-eye');
-        });
-
-        function showFury(e) {
-            e.stopPropagation();
-            loginContainer.style.opacity = "0";
-            setTimeout(() => {
-                loginContainer.style.display = "none";
-                containerFurioso.style.display = "flex";
-                setTimeout(() => {
-                    imgFurioso.classList.add('show');
-                    navButtons.classList.add('show');
-                }, 50);
-            }, 500);
-        }
-
-        function goBack(e) {
-            e.stopPropagation();
-            imgFurioso.classList.remove('show');
-            navButtons.classList.remove('show');
-            setTimeout(() => {
-                containerFurioso.style.display = "none";
-                loginContainer.style.display = "block";
-                setTimeout(() => { loginContainer.style.opacity = "1"; }, 50);
-            }, 600);
-        }
-
-        function exitPage(e) {
-            e.stopPropagation();
-            window.location.href = "about:blank";
-        }
-
-        function createHeartBase(x, y, size) {
-            const heart = document.createElement('div');
-            heart.className = 'heart-bubble';
-            heart.style.width = size + 'px';
-            heart.style.height = size + 'px';
-            heart.style.left = (x - size / 2) + 'px';
-            heart.style.top = (y - size / 2) + 'px';
+        function createSadFace(x, y) {
+            const container = document.createElement('div');
+            container.className = 'sad-face';
+            container.style.left = x + 'px';
+            container.style.top = y + 'px';
+            container.style.fontSize = (Math.random() * 15 + 15) + 'px';
             
-            heart.innerHTML = `
-                <svg class="heart-shape" viewBox="0 0 32 29.6">
-                    <path d="M23.6,0c-3.4,0-6.3,2.7-7.6,5.6C14.7,2.7,11.8,0,8.4,0C3.8,0,0,3.8,0,8.4c0,9.4,9.5,11.9,16,21.2 c6.1-9.3,16-12.1,16-21.2C32,3.8,28.2,0,23.6,0z"/>
-                </svg>
-                <span class="heart-text">Te amo</span>
-            `;
+            container.innerHTML = `☹️`;
 
-            const duration = Math.random() * 2 + 3;
-            heart.style.animationDuration = duration + 's';
-            document.body.appendChild(heart);
-            setTimeout(() => heart.remove(), duration * 1000);
+            const duration = Math.random() * 3 + 5;
+            container.style.animationDuration = duration + 's';
+            document.body.appendChild(container);
+            setTimeout(() => container.remove(), duration * 1000);
         }
 
-        function createHeartAuto() {
-            const size = Math.random() * 20 + 40; 
-            createHeartBase(Math.random() * window.innerWidth, window.innerHeight + 50, size);
-        }
-
-        function createHeartClick(e) {
-            createHeartBase(e.clientX, e.clientY, Math.random() * 40 + 60);
-        }
-
-        setInterval(createHeartAuto, 1000);
+        // Caritas que suben solas
+        setInterval(() => {
+            const x = Math.random() * window.innerWidth;
+            createSadFace(x, window.innerHeight + 50);
+        }, 2000);
     </script>
 </body>
 </html>
