@@ -5,23 +5,63 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Cierre</title>
     <style>
+        :root {
+            --bg-color: #0a0a0a;
+            --text-color: #d1d1d1;
+        }
+
         body {
-            background-color: #0a0a0a;
-            color: #d1d1d1;
+            background-color: var(--bg-color);
+            color: var(--text-color);
             font-family: serif;
             display: flex;
             flex-direction: column;
             align-items: center;
             padding: 50px 20px;
             text-align: center;
-            min-height: 100vh;
+            min-height: 150vh; /* Un poco más alto para asegurar que pueda deslizar */
+            margin: 0;
+            overflow-x: hidden;
         }
 
-        /* ICONO CORAZÓN PARTIDO */
+        /* PANTALLA FINAL */
+        .desconectado-screen {
+            display: none;
+            background: #000;
+            color: #fff;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .desconectado-screen h1 {
+            font-family: sans-serif;
+            letter-spacing: 5px;
+            font-size: 2rem;
+        }
+
+        /* RELOJ */
+        #timer-container {
+            margin-bottom: 20px;
+            font-family: monospace;
+            color: #ff3b30;
+            font-size: 1.2rem;
+        }
+
+        .timer-label {
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 5px;
+            display: block;
+        }
+
+        /* CORAZÓN */
         .heart-broken {
             width: 100px;
             height: 100px;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             opacity: 0.5;
         }
 
@@ -44,7 +84,6 @@
             font-family: sans-serif;
         }
 
-        /* BOTÓN */
         .btn-fotos {
             background: none;
             border: 1px solid #444;
@@ -57,7 +96,6 @@
             transition: 0.3s;
         }
 
-        /* NOTIFICACIÓN / RECTÁNGULO */
         .notificacion {
             position: fixed;
             bottom: 50px;
@@ -75,66 +113,127 @@
             z-index: 1000;
         }
 
-        .notificacion.show {
-            opacity: 1;
-        }
+        .notificacion.show { opacity: 1; }
 
-        #videoMusica { display: none; }
+        #videoMusica {
+            position: absolute;
+            width: 1px; height: 1px;
+            opacity: 0; pointer-events: none;
+        }
     </style>
 </head>
-<body onclick="playMusic()">
+<body>
 
-    <div class="heart-broken">
-        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-            <path d="M50 30 C35 10 5 20 5 45 C5 65 50 90 50 90 L50 60 L45 50 L55 40 L50 30" fill="#333" />
-            <path d="M50 30 C65 10 95 20 95 45 C95 65 50 90 50 90 L50 60 L55 50 L45 40 L50 30" fill="#222" />
-            <path d="M50 30 L55 40 L45 50 L50 60 L50 90" fill="none" stroke="#0a0a0a" stroke-width="2"/>
-        </svg>
+    <div id="pantalla-final" class="desconectado-screen">
+        <h1>SE DESCONECTÓ</h1>
     </div>
 
-    <div class="message-container">
-        <p>
-            Lo siento Mía, ya pude ver que estás bien, que eres feliz y que te va a ir bien...<br><br>
-            Te deseo lo mejor y que sigas siendo muy feliz. Yo no tengo por qué sentirme mal, simplemente las cosas se dieron así, me hubiera encantado que me dijeras algo pero creo que tu silencio dolió mucho.<br><br>
-            Te agradezco mucho por todo lo que pasamos juntos y al igual que tú yo también sufrí pero es todo no puedo estar esperando algo de donde no tiene sentido llegar ni llegará, te preguntarás que por que no te hablé yo es que la ultima vez me respondiste eso:
-        </p>
-        <div class="highlight-box">
-            ---> ª
-            
+    <video id="videoMusica" loop playsinline>
+        <source src="lolo.mp4" type="video/mp4">
+    </video>
+
+    <div id="contenido-principal">
+        <div class="heart-broken">
+            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <path d="M50 30 C35 10 5 20 5 45 C5 65 50 90 50 90 L50 60 L45 50 L55 40 L50 30" fill="#333" />
+                <path d="M50 30 C65 10 95 20 95 45 C95 65 50 90 50 90 L50 60 L55 50 L45 40 L50 30" fill="#222" />
+                <path d="M50 30 L55 40 L45 50 L50 60 L50 90" fill="none" stroke="#0a0a0a" stroke-width="2"/>
+            </svg>
         </div>
-    </div>
 
-    <button class="btn-fotos" onclick="mostrarAviso()">VER FOTOS</button>
+        <div id="timer-container">
+            <span id="countdown">20:00:00</span>
+            <span class="timer-label">Esta página se auto-eliminará</span>
+        </div>
+
+        <div class="message-container">
+            <p>
+                Lo siento Mía, ya pude ver que estás bien, que eres feliz y que te va a ir bien...<br><br>
+                Te deseo lo mejor y que sigas siendo muy feliz. Yo no tengo por qué sentirme mal, simplemente las cosas se dieron así, me hubiera encantado que me dijeras algo pero creo que tu silencio dolió mucho.<br><br>
+                Te agradezco mucho por todo lo que pasamos juntos y al igual que tú yo también sufrí pero es todo no puedo estar esperando algo de donde no tiene sentido llegar ni llegará, te preguntarás que por que no te hablé yo es que la ultima vez me respondiste eso:
+            </p>
+            <div class="highlight-box">
+                ---> ª
+            </div>
+        </div>
+
+        <button class="btn-fotos" onclick="mostrarAviso()">VER FOTOS</button>
+    </div>
 
     <div id="aviso" class="notificacion">
         Ya no tiene sentido ver las fotos mia :(
     </div>
 
-    <video id="videoMusica" loop>
-        <source src="lolo.mp4" type="video/mp4">
-    </video>
-
     <script>
         const video = document.getElementById('videoMusica');
         const aviso = document.getElementById('aviso');
+        const countdownEl = document.getElementById('countdown');
+        const pantallaFinal = document.getElementById('pantalla-final');
+        const contenidoPrincipal = document.getElementById('contenido-principal');
         let playing = false;
 
-        function playMusic() {
+        // FUNCIÓN DE ACTIVACIÓN POR DESLIZAMIENTO
+        function activarSonido() {
             if (!playing) {
-                video.play().catch(e => console.log("Audio esperando interacción"));
-                playing = true;
+                video.play().then(() => {
+                    playing = true;
+                    // Quitamos los eventos una vez que ya está sonando
+                    window.removeEventListener('touchmove', activarSonido);
+                    window.removeEventListener('wheel', activarSonido);
+                }).catch(e => console.log("Esperando interacción..."));
             }
         }
 
-        function mostrarAviso() {
-            // Mostrar el mensaje
-            aviso.classList.add('show');
-            
-            // Hacer que desaparezca después de 3 segundos
-            setTimeout(() => {
-                aviso.classList.remove('show');
-            }, 3000);
+        // Escuchar cuando el usuario deslice en el móvil o use el mouse
+        window.addEventListener('touchmove', activarSonido);
+        window.addEventListener('wheel', activarSonido);
+        // También por si acaso hace un clic
+        window.addEventListener('click', activarSonido);
+
+        // --- CUENTA REGRESIVA ---
+        const DURACION_TOTAL = 20 * 60 * 60 * 1000;
+
+        function iniciarReloj() {
+            let startTime = localStorage.getItem('cierre_start_time');
+            if (!startTime) {
+                startTime = new Date().getTime();
+                localStorage.setItem('cierre_start_time', startTime);
+            }
+
+            const interval = setInterval(() => {
+                const now = new Date().getTime();
+                const transcurrido = now - startTime;
+                const restante = DURACION_TOTAL - transcurrido;
+
+                if (restante <= 0) {
+                    clearInterval(interval);
+                    finalizarPagina();
+                } else {
+                    actualizarDisplay(restante);
+                }
+            }, 1000);
         }
+
+        function actualizarDisplay(ms) {
+            let segundos = Math.floor((ms / 1000) % 60);
+            let minutos = Math.floor((ms / (1000 * 60)) % 60);
+            let horas = Math.floor((ms / (1000 * 60 * 60)) % 24);
+            countdownEl.innerText = `${horas < 10 ? '0'+horas : horas}:${minutos < 10 ? '0'+minutos : minutos}:${segundos < 10 ? '0'+segundos : segundos}`;
+        }
+
+        function finalizarPagina() {
+            contenidoPrincipal.style.display = 'none';
+            pantallaFinal.style.display = 'flex';
+            document.body.style.backgroundColor = "#000";
+            video.pause();
+        }
+
+        function mostrarAviso() {
+            aviso.classList.add('show');
+            setTimeout(() => aviso.classList.remove('show'), 3000);
+        }
+
+        iniciarReloj();
     </script>
 </body>
 </html>
