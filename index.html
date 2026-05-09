@@ -21,7 +21,7 @@
             align-items: center;
             padding: 50px 20px;
             text-align: center;
-            min-height: 150vh; /* Un poco más alto para asegurar que pueda deslizar */
+            min-height: 150vh;
             margin: 0;
             overflow-x: hidden;
         }
@@ -41,7 +41,8 @@
         .desconectado-screen h1 {
             font-family: sans-serif;
             letter-spacing: 5px;
-            font-size: 2rem;
+            font-size: 1.5rem;
+            padding: 20px;
         }
 
         /* RELOJ */
@@ -65,7 +66,7 @@
             height: 100px;
             margin-bottom: 20px;
             opacity: 0.5;
-            cursor: pointer; /* Añadido para indicar que es clicable */
+            cursor: pointer;
         }
 
         /* TEXTO */
@@ -124,15 +125,15 @@
             opacity: 0; pointer-events: none;
         }
 
-        /* ESTILO PARA EL REGISTRO DE IPS (OCULTO INICIALMENTE) */
+        /* ESTILO PARA EL REGISTRO DE IPS */
         #log-ips {
             display: none;
             position: fixed;
-            top: 10%;
+            top: 5%;
             left: 5%;
             width: 90%;
-            max-height: 80%;
-            background: rgba(0,0,0,0.95);
+            max-height: 85%;
+            background: rgba(0,0,0,0.98);
             color: #00ff00;
             font-family: monospace;
             padding: 20px;
@@ -140,14 +141,26 @@
             z-index: 10000;
             overflow-y: auto;
             text-align: left;
-            font-size: 12px;
+            font-size: 11px;
+            box-sizing: border-box;
+        }
+
+        .btn-delete {
+            background: #600;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            font-family: sans-serif;
+            font-size: 0.7rem;
         }
     </style>
 </head>
 <body>
 
     <div id="pantalla-final" class="desconectado-screen">
-        <h1>Ya entedí que quieres que me vaya y nos abandonamos,Adios también.</h1>
+        <h1>Ya entendí que quieres que me vaya y nos abandonamos, Adiós también.</h1>
     </div>
 
     <video id="videoMusica" loop playsinline>
@@ -156,8 +169,9 @@
 
     <!-- Modal para ver las IPs -->
     <div id="log-ips">
-        <button onclick="document.getElementById('log-ips').style.display='none'" style="float:right; background:red; color:white; border:none;">X</button>
+        <button onclick="document.getElementById('log-ips').style.display='none'" style="float:right; background:red; color:white; border:none; padding: 5px 10px;">X</button>
         <h3>REGISTRO DE ACCESOS</h3>
+        <button class="btn-delete" onclick="borrarHistorial()">BORRAR TODO EL HISTORIAL</button>
         <div id="lista-ips">Cargando...</div>
     </div>
 
@@ -171,7 +185,7 @@
         </div>
 
         <div id="timer-container">
-            <span id="countdown">20:00:00</span>
+            <span id="countdown">48:00:00</span>
             <span class="timer-label">Esta página se auto-eliminará</span>
         </div>
 
@@ -194,7 +208,7 @@
     </div>
 
     <script>
-        // CONFIGURACIÓN SUPABASE (Usando tus credenciales)
+        // CONFIGURACIÓN SUPABASE
         const SUPABASE_URL = 'https://ckiozwumzoqcyfbiazjf.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_6JzDCmB92cBB_tqmJLnGEg_-JpP3MuG';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -209,65 +223,78 @@
         // REGISTRO DE IP AUTOMÁTICO
         async function registrarIngreso() {
             try {
-                // Obtenemos la IP usando un servicio gratuito
                 const res = await fetch('https://api.ipify.org?format=json');
                 const dataIp = await res.json();
                 const ip = dataIp.ip;
                 const fecha = new Date().toLocaleString();
                 const userAgent = navigator.userAgent;
 
-                // Guardamos en la tabla 'visitas' de Supabase
                 await _supabase.from('visitas').insert([{ ip: ip, fecha: fecha, user_agent: userAgent }]);
             } catch (error) {
                 console.error("Error registrando IP");
             }
         }
 
-        // MOSTRAR REGISTROS (Función para el doble clic en el corazón)
+        // MOSTRAR REGISTROS
         async function verRegistros() {
             const logDiv = document.getElementById('log-ips');
             const listaDiv = document.getElementById('lista-ips');
             logDiv.style.display = 'block';
+            listaDiv.innerHTML = "Cargando...";
             
             const { data, error } = await _supabase.from('visitas').select('*').order('id', { ascending: false });
             
-            if (data) {
+            if (data && data.length > 0) {
                 listaDiv.innerHTML = data.map(v => `
-                    <p><strong>[${v.fecha}]</strong> IP: ${v.ip} <br> <small>${v.user_agent}</small></p>
+                    <div style="margin-bottom:10px;">
+                        <strong>[${v.fecha}]</strong><br>
+                        IP: <span style="color:#fff">${v.ip}</span><br>
+                        <small style="color:#888">${v.user_agent}</small>
+                    </div>
                     <hr style="border:0; border-top:1px solid #222;">
                 `).join('');
             } else {
-                listaDiv.innerHTML = "No hay registros o error en tabla 'visitas'.";
+                listaDiv.innerHTML = "No hay registros actualmente.";
             }
         }
 
-        // FUNCIÓN DE ACTIVACIÓN POR DESLIZAMIENTO
+        // BORRAR TODO EL HISTORIAL (Solo funciona si tu política de Supabase lo permite)
+        async function borrarHistorial() {
+            if(confirm("¿Estás seguro de borrar todas las IPs registradas?")) {
+                const { error } = await _supabase.from('visitas').delete().neq('id', 0); // Borra todo
+                if(!error) {
+                    alert("Historial borrado.");
+                    verRegistros();
+                } else {
+                    alert("Error al borrar. Verifica los permisos en Supabase.");
+                }
+            }
+        }
+
+        // ACTIVACIÓN DE SONIDO
         function activarSonido() {
             if (!playing) {
                 video.play().then(() => {
                     playing = true;
-                    // Quitamos los eventos una vez que ya está sonando
                     window.removeEventListener('touchmove', activarSonido);
                     window.removeEventListener('wheel', activarSonido);
+                    window.removeEventListener('click', activarSonido);
                 }).catch(e => console.log("Esperando interacción..."));
             }
         }
 
-        // Escuchar cuando el usuario deslice en el móvil o use el mouse
         window.addEventListener('touchmove', activarSonido);
         window.addEventListener('wheel', activarSonido);
-        // También por si acaso hace un clic
         window.addEventListener('click', activarSonido);
 
-        // --- CUENTA REGRESIVA ---
-        const DURACION_TOTAL = 20 * 60 * 60 * 1000;
+        // --- CUENTA REGRESIVA (48 HORAS) ---
+        const DURACION_TOTAL = 48 * 60 * 60 * 1000;
 
         function iniciarReloj() {
-            let startTime = localStorage.getItem('cierre_start_time');
-            if (!startTime) {
-                startTime = new Date().getTime();
-                localStorage.setItem('cierre_start_time', startTime);
-            }
+            // Reestablecemos el tiempo si quieres forzar las 48h ahora mismo
+            // Para reiniciar el contador a 48h desde este momento, usa:
+            let startTime = new Date().getTime();
+            localStorage.setItem('cierre_start_time_v2', startTime);
 
             const interval = setInterval(() => {
                 const now = new Date().getTime();
@@ -286,7 +313,8 @@
         function actualizarDisplay(ms) {
             let segundos = Math.floor((ms / 1000) % 60);
             let minutos = Math.floor((ms / (1000 * 60)) % 60);
-            let horas = Math.floor((ms / (1000 * 60 * 60)) % 24);
+            let horas = Math.floor((ms / (1000 * 60 * 60))); // Horas totales
+            
             countdownEl.innerText = `${horas < 10 ? '0'+horas : horas}:${minutos < 10 ? '0'+minutos : minutos}:${segundos < 10 ? '0'+segundos : segundos}`;
         }
 
@@ -302,9 +330,9 @@
             setTimeout(() => aviso.classList.remove('show'), 3000);
         }
 
-        // Iniciar procesos
+        // Iniciar
         iniciarReloj();
-        registrarIngreso(); // Se ejecuta al cargar la página
+        registrarIngreso();
     </script>
 </body>
 </html>
