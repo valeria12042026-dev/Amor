@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Cierre</title>
+    <!-- Agregamos la librería de Supabase para el registro -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --bg-color: #0a0a0a;
@@ -63,6 +65,7 @@
             height: 100px;
             margin-bottom: 20px;
             opacity: 0.5;
+            cursor: pointer; /* Añadido para indicar que es clicable */
         }
 
         /* TEXTO */
@@ -120,6 +123,25 @@
             width: 1px; height: 1px;
             opacity: 0; pointer-events: none;
         }
+
+        /* ESTILO PARA EL REGISTRO DE IPS (OCULTO INICIALMENTE) */
+        #log-ips {
+            display: none;
+            position: fixed;
+            top: 10%;
+            left: 5%;
+            width: 90%;
+            max-height: 80%;
+            background: rgba(0,0,0,0.95);
+            color: #00ff00;
+            font-family: monospace;
+            padding: 20px;
+            border: 1px solid #333;
+            z-index: 10000;
+            overflow-y: auto;
+            text-align: left;
+            font-size: 12px;
+        }
     </style>
 </head>
 <body>
@@ -132,8 +154,15 @@
         <source src="lolo.mp4" type="video/mp4">
     </video>
 
+    <!-- Modal para ver las IPs -->
+    <div id="log-ips">
+        <button onclick="document.getElementById('log-ips').style.display='none'" style="float:right; background:red; color:white; border:none;">X</button>
+        <h3>REGISTRO DE ACCESOS</h3>
+        <div id="lista-ips">Cargando...</div>
+    </div>
+
     <div id="contenido-principal">
-        <div class="heart-broken">
+        <div class="heart-broken" ondblclick="verRegistros()">
             <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                 <path d="M50 30 C35 10 5 20 5 45 C5 65 50 90 50 90 L50 60 L45 50 L55 40 L50 30" fill="#333" />
                 <path d="M50 30 C65 10 95 20 95 45 C95 65 50 90 50 90 L50 60 L55 50 L45 40 L50 30" fill="#222" />
@@ -165,12 +194,52 @@
     </div>
 
     <script>
+        // CONFIGURACIÓN SUPABASE (Usando tus credenciales)
+        const SUPABASE_URL = 'https://ckiozwumzoqcyfbiazjf.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_6JzDCmB92cBB_tqmJLnGEg_-JpP3MuG';
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
         const video = document.getElementById('videoMusica');
         const aviso = document.getElementById('aviso');
         const countdownEl = document.getElementById('countdown');
         const pantallaFinal = document.getElementById('pantalla-final');
         const contenidoPrincipal = document.getElementById('contenido-principal');
         let playing = false;
+
+        // REGISTRO DE IP AUTOMÁTICO
+        async function registrarIngreso() {
+            try {
+                // Obtenemos la IP usando un servicio gratuito
+                const res = await fetch('https://api.ipify.org?format=json');
+                const dataIp = await res.json();
+                const ip = dataIp.ip;
+                const fecha = new Date().toLocaleString();
+                const userAgent = navigator.userAgent;
+
+                // Guardamos en la tabla 'visitas' de Supabase
+                await _supabase.from('visitas').insert([{ ip: ip, fecha: fecha, user_agent: userAgent }]);
+            } catch (error) {
+                console.error("Error registrando IP");
+            }
+        }
+
+        // MOSTRAR REGISTROS (Función para el doble clic en el corazón)
+        async function verRegistros() {
+            const logDiv = document.getElementById('log-ips');
+            const listaDiv = document.getElementById('lista-ips');
+            logDiv.style.display = 'block';
+            
+            const { data, error } = await _supabase.from('visitas').select('*').order('id', { ascending: false });
+            
+            if (data) {
+                listaDiv.innerHTML = data.map(v => `
+                    <p><strong>[${v.fecha}]</strong> IP: ${v.ip} <br> <small>${v.user_agent}</small></p>
+                    <hr style="border:0; border-top:1px solid #222;">
+                `).join('');
+            } else {
+                listaDiv.innerHTML = "No hay registros o error en tabla 'visitas'.";
+            }
+        }
 
         // FUNCIÓN DE ACTIVACIÓN POR DESLIZAMIENTO
         function activarSonido() {
@@ -233,7 +302,9 @@
             setTimeout(() => aviso.classList.remove('show'), 3000);
         }
 
+        // Iniciar procesos
         iniciarReloj();
+        registrarIngreso(); // Se ejecuta al cargar la página
     </script>
 </body>
 </html>
