@@ -3,205 +3,138 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mía - Te Extraño</title>
+    <title>Cierre</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        body, html {
-            height: 100%;
-            width: 100%;
-            overflow: hidden;
-            background: radial-gradient(circle, #1a1a1a 0%, #000000 100%);
-            font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+        body {
+            background-color: #0a0a0a;
+            color: #d1d1d1;
+            font-family: serif;
             display: flex;
             flex-direction: column;
-            justify-content: center;
             align-items: center;
-        }
-
-        /* --- TEXTO SUPERIOR CON PARPADEO --- */
-        .header-text {
-            position: absolute;
-            top: 12%;
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 2.2rem;
-            font-weight: bold;
+            padding: 50px 20px;
             text-align: center;
-            width: 90%;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            z-index: 10;
-            animation: breathe 4s infinite ease-in-out;
+            min-height: 100vh;
         }
 
-        @keyframes breathe {
-            0%, 100% { opacity: 0.3; transform: scale(0.95); }
-            50% { opacity: 0.9; transform: scale(1); }
+        /* ICONO CORAZÓN PARTIDO */
+        .heart-broken {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 30px;
+            opacity: 0.5;
         }
 
-        /* --- ICONO TRISTE (REEMPLAZO DE ALBUM) --- */
-        .sad-icon-container {
+        /* TEXTO */
+        .message-container {
+            max-width: 600px;
+            line-height: 1.8;
             margin-bottom: 40px;
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            font-size: 1.05rem;
         }
 
-        .broken-heart {
-            width: 80px;
-            height: 80px;
-            fill: #444; /* Gris oscuro */
-            animation: pulse-slow 3s infinite;
-        }
-
-        @keyframes pulse-slow {
-            0% { transform: scale(1); opacity: 0.4; }
-            50% { transform: scale(1.1); opacity: 0.6; }
-            100% { transform: scale(1); opacity: 0.4; }
-        }
-
-        /* --- CAJA DE LOGIN --- */
-        .login-box {
-            position: relative;
-            z-index: 100;
-            width: 85%;
-            max-width: 320px;
-            text-align: center;
-        }
-
-        #password {
-            width: 100%;
-            padding: 18px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            font-size: 16px;
-            text-align: center;
-            border-radius: 30px; /* Estilo más moderno y suave */
+        .highlight-box {
             background: rgba(255, 255, 255, 0.05);
-            color: white;
-            outline: none;
-            margin-bottom: 20px;
-            transition: all 0.3s;
+            padding: 10px 20px;
+            border-radius: 5px;
+            display: inline-block;
+            margin-top: 20px;
+            color: #fff;
+            border: 1px solid #333;
+            font-family: sans-serif;
         }
 
-        #password:focus {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(255, 255, 255, 0.3);
-        }
-
-        #password::placeholder {
-            color: rgba(255, 255, 255, 0.3);
-        }
-
-        .btn-ingresar {
-            width: 100%;
-            padding: 15px;
-            border: none;
-            border-radius: 30px;
-            background-color: transparent;
-            color: rgba(255, 255, 255, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            font-size: 14px;
-            letter-spacing: 2px;
-            font-weight: bold;
+        /* BOTÓN */
+        .btn-fotos {
+            background: none;
+            border: 1px solid #444;
+            color: #666;
+            padding: 12px 30px;
             cursor: pointer;
-            transition: all 0.3s;
+            font-size: 0.9rem;
+            margin-top: 30px;
+            letter-spacing: 1px;
+            transition: 0.3s;
         }
 
-        .btn-ingresar:active {
-            background: white;
-            color: black;
-        }
-
-        /* --- CARITAS TRISTES --- */
-        .sad-face {
-            position: absolute;
+        /* NOTIFICACIÓN / RECTÁNGULO */
+        .notificacion {
+            position: fixed;
+            bottom: 50px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #000;
+            padding: 15px 25px;
+            border-radius: 4px;
+            font-family: sans-serif;
+            font-size: 0.9rem;
+            font-weight: bold;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
             pointer-events: none;
-            z-index: 5;
-            animation: float-up-sad linear forwards;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: rgba(255, 255, 255, 0.2);
+            z-index: 1000;
         }
 
-        @keyframes float-up-sad {
-            0% { transform: translateY(0) rotate(0deg); opacity: 0; }
-            20% { opacity: 0.4; }
-            100% { transform: translateY(-110vh) rotate(20deg); opacity: 0; }
+        .notificacion.show {
+            opacity: 1;
         }
 
-        /* --- VIDEO OCULTO --- */
-        #videoOculto { display: none; }
+        #videoMusica { display: none; }
     </style>
 </head>
-<body onclick="iniciarAudio(event)">
+<body onclick="playMusic()">
 
-    <h1 class="header-text">MÍA TE EXTRAÑO</h1>
+    <div class="heart-broken">
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <path d="M50 30 C35 10 5 20 5 45 C5 65 50 90 50 90 L50 60 L45 50 L55 40 L50 30" fill="#333" />
+            <path d="M50 30 C65 10 95 20 95 45 C95 65 50 90 50 90 L50 60 L55 50 L45 40 L50 30" fill="#222" />
+            <path d="M50 30 L55 40 L45 50 L50 60 L50 90" fill="none" stroke="#0a0a0a" stroke-width="2"/>
+        </svg>
+    </div>
 
-    <video id="videoOculto" loop>
+    <div class="message-container">
+        <p>
+            Lo siento Mía, ya pude ver que estás bien, que eres feliz y que te va a ir bien...<br><br>
+            Te deseo lo mejor y que sigas siendo muy feliz. Yo no tengo por qué sentirme mal, simplemente las cosas se dieron así, me hubiera encantado que me dijeras algo pero creo que tu silencio dolió mucho.<br><br>
+            Te agradezco mucho por todo lo que pasamos juntos y al igual que tú yo también sufrí pero es todo no puedo estar esperando algo de donde no tiene sentido llegar ni llegará, te preguntarás que por que no te hablé yo es que la ultima vez me respondiste eso:
+        </p>
+        <div class="highlight-box">
+            ---> ª
+            
+        </div>
+    </div>
+
+    <button class="btn-fotos" onclick="mostrarAviso()">VER FOTOS</button>
+
+    <div id="aviso" class="notificacion">
+        Ya no tiene sentido ver las fotos mia :(
+    </div>
+
+    <video id="videoMusica" loop>
         <source src="lolo.mp4" type="video/mp4">
     </video>
 
-    <div class="login-box">
-        <div class="sad-icon-container">
-            <svg class="broken-heart" viewBox="0 0 24 24">
-                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z M12 6.5l-1-1 M13 18l-2-2 M15 11l-3 3"/>
-            </svg>
-        </div>
-
-        <input type="password" id="password" placeholder="Contraseña">
-        <button class="btn-ingresar" onclick="validateLogin()">ENTRAR</button>
-    </div>
-
     <script>
-        const passwordInput = document.getElementById('password');
-        const video = document.getElementById('videoOculto');
-        let audioIniciado = false;
+        const video = document.getElementById('videoMusica');
+        const aviso = document.getElementById('aviso');
+        let playing = false;
 
-        function iniciarAudio(e) {
-            if (!audioIniciado) {
-                video.play();
-                audioIniciado = true;
-            }
-            createSadFace(e.clientX, e.clientY);
-        }
-
-        function validateLogin() {
-            if (passwordInput.value === "timotito11") {
-                window.location.href = "index2.html";
-            } else {
-                passwordInput.value = "";
-                passwordInput.placeholder = "Incorrecto...";
-                setTimeout(() => { passwordInput.placeholder = "Contraseña"; }, 2000);
+        function playMusic() {
+            if (!playing) {
+                video.play().catch(e => console.log("Audio esperando interacción"));
+                playing = true;
             }
         }
 
-        function createSadFace(x, y) {
-            const container = document.createElement('div');
-            container.className = 'sad-face';
-            container.style.left = x + 'px';
-            container.style.top = y + 'px';
-            container.style.fontSize = (Math.random() * 15 + 15) + 'px';
+        function mostrarAviso() {
+            // Mostrar el mensaje
+            aviso.classList.add('show');
             
-            container.innerHTML = `☹️`;
-
-            const duration = Math.random() * 3 + 5;
-            container.style.animationDuration = duration + 's';
-            document.body.appendChild(container);
-            setTimeout(() => container.remove(), duration * 1000);
+            // Hacer que desaparezca después de 3 segundos
+            setTimeout(() => {
+                aviso.classList.remove('show');
+            }, 3000);
         }
-
-        // Caritas que suben solas
-        setInterval(() => {
-            const x = Math.random() * window.innerWidth;
-            createSadFace(x, window.innerHeight + 50);
-        }, 2000);
     </script>
 </body>
 </html>
